@@ -43,7 +43,7 @@ Fleet recognition: `FleetRecognitionService` extracts the leading digit group
 3. Mobile logging UI (Quick / Advanced modes; Service mode deferred to milestone 8,
    needs live operational data) - **done**
 4. Statistics - **done**
-5. Fleet tracking (seen/missing per fleet)
+5. Fleet tracking (seen/missing per fleet) - **done**
 6. Vehicle detail pages
 7. Map (sighting locations, heatmap, clustering)
 8. Live operational data integration (Swiss public transport APIs, optional layer)
