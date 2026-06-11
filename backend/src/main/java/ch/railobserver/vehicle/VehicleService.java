@@ -51,6 +51,17 @@ public class VehicleService {
     }
 
     @Transactional
+    public Vehicle findOrCreateByNumber(String number) {
+        return vehicleRepository.findByNumber(number)
+                .orElseGet(() -> {
+                    Vehicle vehicle = new Vehicle();
+                    vehicle.setNumber(number);
+                    vehicle.setVehicleType(fleetRecognitionService.recognize(number).orElse(null));
+                    return vehicleRepository.save(vehicle);
+                });
+    }
+
+    @Transactional
     public void delete(Long id) {
         if (!vehicleRepository.existsById(id)) {
             throw new ResourceNotFoundException("Vehicle not found: " + id);
