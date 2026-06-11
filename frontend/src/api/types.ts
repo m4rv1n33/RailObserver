@@ -145,3 +145,16 @@ export interface FleetDetailResponse {
   seenVehicles: SeenVehicleResponse[]
   missingNumbers: string[]
 }
+
+export interface StationResponse {
+  id: string
+  name: string
+}
+
+export interface DepartureResponse {
+  line: string | null
+  trainNumber: string | null
+  destination: string | null
+  departureTime: string | null
+  platform: string | null
+}

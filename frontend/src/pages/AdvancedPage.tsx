@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { createSighting } from '../api/client'
+import type { DepartureResponse } from '../api/types'
 import { useVehicleNumbers } from '../hooks/useVehicleNumbers'
 import { VehicleNumberInput } from '../components/VehicleNumberInput'
 import { Field } from '../components/Field'
+import { DepartureLookup } from '../components/DepartureLookup'
 import { toDateTimeLocal } from '../lib/datetime'
 
 const inputClass = 'w-full rounded-md border border-slate-300 px-3 py-2 text-base'
@@ -21,6 +23,13 @@ export function AdvancedPage() {
   const [departureTime, setDepartureTime] = useState('')
   const [notes, setNotes] = useState('')
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+
+  function applyDeparture(departure: DepartureResponse) {
+    if (departure.line) setLine(departure.line)
+    if (departure.trainNumber) setTrainNumber(departure.trainNumber)
+    if (departure.destination) setDestination(departure.destination)
+    if (departure.departureTime) setDepartureTime(toDateTimeLocal(new Date(departure.departureTime)))
+  }
 
   function captureLocation() {
     if (!navigator.geolocation) {
@@ -152,6 +161,8 @@ export function AdvancedPage() {
 
         <fieldset className="space-y-4 rounded-md border border-slate-200 p-3">
           <legend className="px-1 text-sm font-medium text-slate-700">Service</legend>
+
+          <DepartureLookup onSelect={applyDeparture} />
 
           <Field label="Line">
             <input

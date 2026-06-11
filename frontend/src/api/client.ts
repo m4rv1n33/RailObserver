@@ -1,6 +1,7 @@
 import type {
   CreateSightingRequest,
   CreateVehicleRequest,
+  DepartureResponse,
   FamilyCountResponse,
   FleetCountResponse,
   FleetDetailResponse,
@@ -10,6 +11,7 @@ import type {
   SightingLocationResponse,
   SightingResponse,
   StationCountResponse,
+  StationResponse,
   UpdateVehicleRequest,
   VehicleCountResponse,
   VehicleDetailResponse,
@@ -139,4 +141,14 @@ export function getSightingLocations(filters: SightingLocationFilters = {}): Pro
 
 export function getFleet(id: number): Promise<FleetDetailResponse> {
   return request(`/fleets/${id}`)
+}
+
+export function getStations(query: string): Promise<StationResponse[]> {
+  return request(`/transport/stations?query=${encodeURIComponent(query)}`)
+}
+
+export function getDepartures(station: string, limit?: number): Promise<DepartureResponse[]> {
+  const params = new URLSearchParams({ station })
+  if (limit) params.set('limit', String(limit))
+  return request(`/transport/departures?${params.toString()}`)
 }
