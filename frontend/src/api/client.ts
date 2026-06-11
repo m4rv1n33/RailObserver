@@ -9,7 +9,9 @@ import type {
   OperatorCountResponse,
   SightingResponse,
   StationCountResponse,
+  UpdateVehicleRequest,
   VehicleCountResponse,
+  VehicleDetailResponse,
   VehicleResponse,
   VehicleTypeResponse,
 } from './types'
@@ -47,6 +49,14 @@ export function getVehicles(): Promise<VehicleResponse[]> {
 
 export function getVehicle(id: number): Promise<VehicleResponse> {
   return request(`/vehicles/${id}`)
+}
+
+export function getVehicleDetail(id: number): Promise<VehicleDetailResponse> {
+  return request(`/vehicles/${id}/detail`)
+}
+
+export function updateVehicle(id: number, body: UpdateVehicleRequest): Promise<VehicleResponse> {
+  return request(`/vehicles/${id}`, { method: 'PATCH', body: JSON.stringify(body) })
 }
 
 export function createVehicle(body: CreateVehicleRequest): Promise<VehicleResponse> {

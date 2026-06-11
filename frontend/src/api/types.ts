@@ -13,6 +13,25 @@ export interface VehicleResponse {
   vehicleType: VehicleTypeResponse | null
   operator: string | null
   manufacturer: string | null
+  notes: string | null
+}
+
+export interface VehicleDetailResponse {
+  id: number
+  number: string
+  vehicleType: VehicleTypeResponse | null
+  operator: string | null
+  manufacturer: string | null
+  notes: string | null
+  firstSeen: string | null
+  lastSeen: string | null
+  sightingCount: number
+  observedServices: string[]
+  observedLocations: string[]
+}
+
+export interface UpdateVehicleRequest {
+  notes?: string | null
 }
 
 export interface ServiceInfoResponse {
@@ -102,6 +121,11 @@ export interface FleetSummaryResponse {
   missingCount: number
 }
 
+export interface SeenVehicleResponse {
+  id: number
+  number: string
+}
+
 export interface FleetDetailResponse {
   id: number
   name: string
@@ -109,6 +133,6 @@ export interface FleetDetailResponse {
   fleetSize: number | null
   seenCount: number
   missingCount: number
-  seenNumbers: string[]
+  seenVehicles: SeenVehicleResponse[]
   missingNumbers: string[]
 }
