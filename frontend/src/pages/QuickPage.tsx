@@ -1,43 +1,24 @@
 import { useState } from 'react'
-import type { KeyboardEvent } from 'react'
 import { createSighting } from '../api/client'
+import { useVehicleNumbers } from '../hooks/useVehicleNumbers'
+import { VehicleNumberInput } from '../components/VehicleNumberInput'
 
 export function QuickPage() {
-  const [numbers, setNumbers] = useState<string[]>([])
-  const [input, setInput] = useState('')
+  const vehicles = useVehicleNumbers()
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
 
-  function addNumber() {
-    const trimmed = input.trim()
-    if (!trimmed) return
-    setNumbers((prev) => [...prev, trimmed])
-    setInput('')
-  }
-
-  function removeNumber(index: number) {
-    setNumbers((prev) => prev.filter((_, i) => i !== index))
-  }
-
   async function save() {
-    const vehicleNumbers = [...numbers, ...(input.trim() ? [input.trim()] : [])]
+    const vehicleNumbers = vehicles.all()
     if (vehicleNumbers.length === 0) return
 
     setStatus('saving')
     try {
       await createSighting({ vehicleNumbers })
-      setNumbers([])
-      setInput('')
+      vehicles.reset()
       setStatus('saved')
       setTimeout(() => setStatus('idle'), 2000)
     } catch {
       setStatus('error')
-    }
-  }
-
-  function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
-    if (event.key === 'Enter') {
-      event.preventDefault()
-      void save()
     }
   }
 
@@ -48,52 +29,22 @@ export function QuickPage() {
         Enter a vehicle number and save. Add more for a composition.
       </p>
 
-      {numbers.length > 0 && (
-        <ul className="mt-4 flex flex-wrap gap-2">
-          {numbers.map((number, index) => (
-            <li
-              key={`${number}-${index}`}
-              className="flex items-center gap-1 rounded-full bg-slate-200 px-3 py-1 text-sm"
-            >
-              {number}
-              <button
-                type="button"
-                onClick={() => removeNumber(index)}
-                className="text-slate-500"
-                aria-label={`Remove ${number}`}
-              >
-                ×
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <div className="mt-4 flex gap-2">
-        <input
-          type="text"
-          inputMode="numeric"
+      <div className="mt-4">
+        <VehicleNumberInput
+          numbers={vehicles.numbers}
+          input={vehicles.input}
+          onInputChange={vehicles.setInput}
+          onAdd={vehicles.add}
+          onRemove={vehicles.remove}
+          onEnter={() => void save()}
           autoFocus
-          value={input}
-          onChange={(event) => setInput(event.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Vehicle number"
-          className="flex-1 rounded-md border border-slate-300 px-3 py-3 text-lg"
         />
-        <button
-          type="button"
-          onClick={addNumber}
-          disabled={!input.trim()}
-          className="rounded-md border border-slate-300 px-4 text-lg font-medium text-slate-600 disabled:opacity-40"
-        >
-          +
-        </button>
       </div>
 
       <button
         type="button"
         onClick={() => void save()}
-        disabled={status === 'saving' || (numbers.length === 0 && !input.trim())}
+        disabled={status === 'saving' || vehicles.all().length === 0}
         className="mt-4 w-full rounded-md bg-slate-900 py-3 text-lg font-semibold text-white disabled:opacity-40"
       >
         {status === 'saving' ? 'Saving...' : 'Save sighting'}
