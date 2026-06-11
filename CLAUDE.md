@@ -44,7 +44,7 @@ Fleet recognition: `FleetRecognitionService` extracts the leading digit group
    needs live operational data) - **done**
 4. Statistics - **done**
 5. Fleet tracking (seen/missing per fleet) - **done**
-6. Vehicle detail pages
+6. Vehicle detail pages - **done**
 7. Map (sighting locations, heatmap, clustering)
 8. Live operational data integration (Swiss public transport APIs, optional layer)
 
