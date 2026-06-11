@@ -29,3 +29,13 @@ cd backend
 ```
 
 The API runs on `http://localhost:8080`.
+
+### Frontend
+
+```
+cd frontend
+npm install
+npm run dev
+```
+
+The app runs on `http://localhost:5173` and proxies `/api` to the backend.
