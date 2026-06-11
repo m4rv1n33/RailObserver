@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { deleteSighting, getSightings } from '../api/client'
 import type { ServiceInfoResponse, SightingResponse, VehicleResponse } from '../api/types'
 
@@ -57,7 +58,14 @@ export function SightingsPage() {
                   {new Date(sighting.observedAt).toLocaleString()}
                 </p>
                 <p className="font-medium">
-                  {sighting.vehicles.map(formatVehicle).join(', ')}
+                  {sighting.vehicles.map((vehicle, index) => (
+                    <span key={vehicle.id}>
+                      {index > 0 && ', '}
+                      <Link to={`/vehicles/${vehicle.id}`} className="underline">
+                        {formatVehicle(vehicle)}
+                      </Link>
+                    </span>
+                  ))}
                 </p>
                 {(sighting.station || sighting.direction) && (
                   <p className="text-sm text-slate-500">
