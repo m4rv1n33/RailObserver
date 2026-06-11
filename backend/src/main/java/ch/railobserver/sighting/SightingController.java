@@ -1,8 +1,10 @@
 package ch.railobserver.sighting;
 
 import ch.railobserver.sighting.dto.CreateSightingRequest;
+import ch.railobserver.sighting.dto.SightingLocationResponse;
 import ch.railobserver.sighting.dto.SightingResponse;
 import jakarta.validation.Valid;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -11,8 +13,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Instant;
 import java.util.List;
 
 @RestController
@@ -35,6 +39,17 @@ public class SightingController {
     @GetMapping("/{id}")
     public SightingResponse getById(@PathVariable Long id) {
         return SightingResponse.from(service.findById(id));
+    }
+
+    @GetMapping("/locations")
+    public List<SightingLocationResponse> getLocations(
+            @RequestParam(required = false) Long vehicleId,
+            @RequestParam(required = false) Long fleetId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to) {
+        return service.findForMap(vehicleId, fleetId, from, to).stream()
+                .map(SightingLocationResponse::from)
+                .toList();
     }
 
     @PostMapping

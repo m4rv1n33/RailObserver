@@ -5,6 +5,8 @@ import ch.railobserver.sighting.dto.CreateSightingRequest;
 import ch.railobserver.sighting.dto.ServiceInfoRequest;
 import ch.railobserver.vehicle.Vehicle;
 import ch.railobserver.vehicle.VehicleService;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +32,23 @@ public class SightingService {
     public Sighting findById(Long id) {
         return sightingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Sighting not found: " + id));
+    }
+
+    public List<Sighting> findForMap(Long vehicleId, Long fleetId, Instant from, Instant to) {
+        Specification<Sighting> spec = Specification.where(SightingSpecifications.hasLocation());
+        if (vehicleId != null) {
+            spec = spec.and(SightingSpecifications.hasVehicle(vehicleId));
+        }
+        if (fleetId != null) {
+            spec = spec.and(SightingSpecifications.hasFleet(fleetId));
+        }
+        if (from != null) {
+            spec = spec.and(SightingSpecifications.observedAfter(from));
+        }
+        if (to != null) {
+            spec = spec.and(SightingSpecifications.observedBefore(to));
+        }
+        return sightingRepository.findAll(spec, Sort.by(Sort.Direction.DESC, "observedAt"));
     }
 
     @Transactional
