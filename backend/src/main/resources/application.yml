@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: railobserver
+  datasource:
+    url: jdbc:postgresql://localhost:5432/railobserver
+    username: railobserver
+    password: railobserver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    locations: classpath:db/migration
