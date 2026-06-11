@@ -46,7 +46,7 @@ Fleet recognition: `FleetRecognitionService` extracts the leading digit group
 5. Fleet tracking (seen/missing per fleet) - **done**
 6. Vehicle detail pages - **done**
 7. Map (sighting locations, heatmap, clustering) - **done**
-8. Live operational data integration (Swiss public transport APIs, optional layer)
+8. Live operational data integration (Swiss public transport APIs, optional layer) - **done**
 
 After each milestone: verify functionality, refactor if necessary, commit.
 
