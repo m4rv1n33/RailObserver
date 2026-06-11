@@ -39,7 +39,7 @@ Fleet recognition: `FleetRecognitionService` extracts the leading digit group
 ## Milestone plan
 
 1. Backend setup, DB setup, Vehicle model, VehicleType model - **done**
-2. Sighting model, basic CRUD
+2. Sighting model, basic CRUD - **done**
 3. Mobile logging UI (Quick / Service / Advanced modes)
 4. Statistics
 5. Fleet tracking (seen/missing per fleet)
