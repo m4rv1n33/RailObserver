@@ -58,3 +58,37 @@ export interface CreateSightingRequest {
   notes?: string | null
   vehicleNumbers: string[]
 }
+
+export interface VehicleCountResponse {
+  vehicleId: number
+  number: string
+  vehicleTypeName: string | null
+  count: number
+}
+
+export interface FleetCountResponse {
+  vehicleTypeId: number
+  name: string
+  count: number
+}
+
+export interface StationCountResponse {
+  station: string
+  count: number
+}
+
+export interface FamilyCountResponse {
+  family: string
+  count: number
+}
+
+export interface OperatorCountResponse {
+  operator: string
+  count: number
+}
+
+export interface MonthlyCountResponse {
+  year: number
+  month: number
+  count: number
+}

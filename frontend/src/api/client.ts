@@ -1,7 +1,13 @@
 import type {
   CreateSightingRequest,
   CreateVehicleRequest,
+  FamilyCountResponse,
+  FleetCountResponse,
+  MonthlyCountResponse,
+  OperatorCountResponse,
   SightingResponse,
+  StationCountResponse,
+  VehicleCountResponse,
   VehicleResponse,
   VehicleTypeResponse,
 } from './types'
@@ -71,4 +77,28 @@ export function createSighting(body: CreateSightingRequest): Promise<SightingRes
 
 export function deleteSighting(id: number): Promise<void> {
   return request(`/sightings/${id}`, { method: 'DELETE' })
+}
+
+export function getMostSeenVehicles(limit?: number): Promise<VehicleCountResponse[]> {
+  return request(`/statistics/vehicles${limit ? `?limit=${limit}` : ''}`)
+}
+
+export function getMostSeenFleets(limit?: number): Promise<FleetCountResponse[]> {
+  return request(`/statistics/fleets${limit ? `?limit=${limit}` : ''}`)
+}
+
+export function getMostVisitedStations(limit?: number): Promise<StationCountResponse[]> {
+  return request(`/statistics/stations${limit ? `?limit=${limit}` : ''}`)
+}
+
+export function getSightingsByFamily(): Promise<FamilyCountResponse[]> {
+  return request('/statistics/families')
+}
+
+export function getSightingsByOperator(): Promise<OperatorCountResponse[]> {
+  return request('/statistics/operators')
+}
+
+export function getSightingsByMonth(): Promise<MonthlyCountResponse[]> {
+  return request('/statistics/monthly')
 }
