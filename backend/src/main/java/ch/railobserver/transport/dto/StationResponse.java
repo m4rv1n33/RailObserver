@@ -1,0 +1,4 @@
+package ch.railobserver.transport.dto;
+
+public record StationResponse(String id, String name) {
+}
