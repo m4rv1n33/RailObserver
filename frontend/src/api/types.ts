@@ -92,3 +92,23 @@ export interface MonthlyCountResponse {
   month: number
   count: number
 }
+
+export interface FleetSummaryResponse {
+  id: number
+  name: string
+  family: string | null
+  fleetSize: number | null
+  seenCount: number
+  missingCount: number
+}
+
+export interface FleetDetailResponse {
+  id: number
+  name: string
+  family: string | null
+  fleetSize: number | null
+  seenCount: number
+  missingCount: number
+  seenNumbers: string[]
+  missingNumbers: string[]
+}

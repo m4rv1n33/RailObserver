@@ -3,6 +3,8 @@ import type {
   CreateVehicleRequest,
   FamilyCountResponse,
   FleetCountResponse,
+  FleetDetailResponse,
+  FleetSummaryResponse,
   MonthlyCountResponse,
   OperatorCountResponse,
   SightingResponse,
@@ -101,4 +103,12 @@ export function getSightingsByOperator(): Promise<OperatorCountResponse[]> {
 
 export function getSightingsByMonth(): Promise<MonthlyCountResponse[]> {
   return request('/statistics/monthly')
+}
+
+export function getFleets(): Promise<FleetSummaryResponse[]> {
+  return request('/fleets')
+}
+
+export function getFleet(id: number): Promise<FleetDetailResponse> {
+  return request(`/fleets/${id}`)
 }
