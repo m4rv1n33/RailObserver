@@ -8,7 +8,7 @@ Mobile-first (iPhone), offline-friendly where possible.
 ## Stack
 
 - Backend: Java 21, Spring Boot 3, Spring Data JPA, Flyway, PostgreSQL (Maven, `backend/`)
-- Frontend: React, TypeScript, TailwindCSS, PWA (`frontend/`, not yet created)
+- Frontend: React, TypeScript, TailwindCSS, PWA (`frontend/`)
 
 ## Conventions
 
@@ -40,7 +40,8 @@ Fleet recognition: `FleetRecognitionService` extracts the leading digit group
 
 1. Backend setup, DB setup, Vehicle model, VehicleType model - **done**
 2. Sighting model, basic CRUD - **done**
-3. Mobile logging UI (Quick / Service / Advanced modes)
+3. Mobile logging UI (Quick / Advanced modes; Service mode deferred to milestone 8,
+   needs live operational data) - **done**
 4. Statistics
 5. Fleet tracking (seen/missing per fleet)
 6. Vehicle detail pages
@@ -54,4 +55,5 @@ After each milestone: verify functionality, refactor if necessary, commit.
 ```
 docker compose up -d        # PostgreSQL (requires Docker Desktop running)
 cd backend && ./mvnw spring-boot:run   # API on http://localhost:8080
+cd frontend && npm run dev             # app on http://localhost:5173
 ```
