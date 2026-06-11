@@ -8,6 +8,7 @@ import java.util.Optional;
 
 public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
 
+    @EntityGraph(attributePaths = "vehicleType")
     Optional<Vehicle> findByNumber(String number);
 
     boolean existsByNumber(String number);
