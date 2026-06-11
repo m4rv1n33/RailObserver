@@ -5,9 +5,9 @@ import { useVehicleNumbers } from '../hooks/useVehicleNumbers'
 import { VehicleNumberInput } from '../components/VehicleNumberInput'
 import { Field } from '../components/Field'
 import { DepartureLookup } from '../components/DepartureLookup'
+import { TextInput, Textarea } from '../components/Input'
+import { Button } from '../components/Button'
 import { toDateTimeLocal } from '../lib/datetime'
-
-const inputClass = 'w-full rounded-md border border-slate-300 px-3 py-2 text-base'
 
 export function AdvancedPage() {
   const vehicles = useVehicleNumbers()
@@ -112,42 +112,31 @@ export function AdvancedPage() {
         </Field>
 
         <Field label="Observed at">
-          <input
+          <TextInput
             type="datetime-local"
             value={observedAt}
             onChange={(event) => setObservedAt(event.target.value)}
-            className={inputClass}
           />
         </Field>
 
         <Field label="Station">
-          <input
-            type="text"
-            value={station}
-            onChange={(event) => setStation(event.target.value)}
-            className={inputClass}
-          />
+          <TextInput type="text" value={station} onChange={(event) => setStation(event.target.value)} />
         </Field>
 
         <Field label="Direction">
-          <input
+          <TextInput
             type="text"
             value={direction}
             onChange={(event) => setDirection(event.target.value)}
             placeholder="e.g. towards Zurich"
-            className={inputClass}
           />
         </Field>
 
         <Field label="Location">
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={captureLocation}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-600"
-            >
+            <Button variant="secondary" onClick={captureLocation} className="px-3 py-2 text-sm font-medium">
               {locationStatus === 'locating' ? 'Locating...' : 'Use current location'}
-            </button>
+            </Button>
             {latitude !== null && longitude !== null && (
               <span className="text-sm text-slate-500">
                 {latitude.toFixed(5)}, {longitude.toFixed(5)}
@@ -162,63 +151,41 @@ export function AdvancedPage() {
         <fieldset className="space-y-4 rounded-md border border-slate-200 p-3">
           <legend className="px-1 text-sm font-medium text-slate-700">Service</legend>
 
-          <DepartureLookup onSelect={applyDeparture} />
+          <DepartureLookup onSelect={applyDeparture} initialQuery={station} />
 
           <Field label="Line">
-            <input
-              type="text"
-              value={line}
-              onChange={(event) => setLine(event.target.value)}
-              className={inputClass}
-            />
+            <TextInput type="text" value={line} onChange={(event) => setLine(event.target.value)} />
           </Field>
 
           <Field label="Train number">
-            <input
-              type="text"
-              value={trainNumber}
-              onChange={(event) => setTrainNumber(event.target.value)}
-              className={inputClass}
-            />
+            <TextInput type="text" value={trainNumber} onChange={(event) => setTrainNumber(event.target.value)} />
           </Field>
 
           <Field label="Destination">
-            <input
-              type="text"
-              value={destination}
-              onChange={(event) => setDestination(event.target.value)}
-              className={inputClass}
-            />
+            <TextInput type="text" value={destination} onChange={(event) => setDestination(event.target.value)} />
           </Field>
 
           <Field label="Departure time">
-            <input
+            <TextInput
               type="datetime-local"
               value={departureTime}
               onChange={(event) => setDepartureTime(event.target.value)}
-              className={inputClass}
             />
           </Field>
         </fieldset>
 
         <Field label="Notes">
-          <textarea
-            value={notes}
-            onChange={(event) => setNotes(event.target.value)}
-            rows={3}
-            className={inputClass}
-          />
+          <Textarea value={notes} onChange={(event) => setNotes(event.target.value)} rows={3} />
         </Field>
       </div>
 
-      <button
-        type="button"
+      <Button
         onClick={() => void save()}
         disabled={status === 'saving' || vehicles.all().length === 0}
-        className="mt-4 w-full rounded-md bg-slate-900 py-3 text-lg font-semibold text-white disabled:opacity-40"
+        className="mt-4 w-full py-3 text-lg font-semibold"
       >
         {status === 'saving' ? 'Saving...' : 'Save sighting'}
-      </button>
+      </Button>
 
       {status === 'saved' && <p className="mt-3 text-sm text-emerald-600">Sighting saved.</p>}
       {status === 'error' && (

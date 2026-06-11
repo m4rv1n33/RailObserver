@@ -27,12 +27,15 @@ export function FleetsPage() {
       )}
 
       {fleets !== null && fleets.length > 0 && (
-        <ul className="mt-4 divide-y divide-slate-200 border-y border-slate-200">
+        <ul className="mt-4 space-y-2">
           {fleets.map((fleet) => {
             const ratio = fleet.fleetSize ? fleet.seenCount / fleet.fleetSize : 0
             return (
               <li key={fleet.id}>
-                <Link to={`/fleets/${fleet.id}`} className="block py-3">
+                <Link
+                  to={`/fleets/${fleet.id}`}
+                  className="block rounded-md border border-slate-200 bg-white p-3 hover:border-slate-300"
+                >
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-medium">{fleet.name}</span>
                     <span className="text-sm text-slate-500">

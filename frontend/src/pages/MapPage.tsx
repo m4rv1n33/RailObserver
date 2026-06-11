@@ -12,11 +12,12 @@ import shadowUrl from 'leaflet/dist/images/marker-shadow.png'
 import { getFleets, getSightingLocations, getVehicles } from '../api/client'
 import type { FleetSummaryResponse, SightingLocationResponse, VehicleResponse } from '../api/types'
 import { Field } from '../components/Field'
+import { Select, TextInput } from '../components/Input'
+import { Button } from '../components/Button'
 
 delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl
 L.Icon.Default.mergeOptions({ iconRetinaUrl, iconUrl, shadowUrl })
 
-const inputClass = 'w-full rounded-md border border-slate-300 px-3 py-2 text-base'
 const SWITZERLAND_CENTER: L.LatLngTuple = [46.8182, 8.2275]
 const DEFAULT_ZOOM = 8
 
@@ -147,55 +148,51 @@ export function MapPage() {
 
       <div className="mt-4 grid grid-cols-2 gap-3">
         <Field label="Fleet">
-          <select value={fleetId} onChange={(event) => setFleetId(event.target.value)} className={inputClass}>
+          <Select value={fleetId} onChange={(event) => setFleetId(event.target.value)}>
             <option value="">All fleets</option>
             {fleets.map((fleet) => (
               <option key={fleet.id} value={fleet.id}>
                 {fleet.name}
               </option>
             ))}
-          </select>
+          </Select>
         </Field>
 
         <Field label="Vehicle">
-          <select value={vehicleId} onChange={(event) => setVehicleId(event.target.value)} className={inputClass}>
+          <Select value={vehicleId} onChange={(event) => setVehicleId(event.target.value)}>
             <option value="">All vehicles</option>
             {vehicles.map((vehicle) => (
               <option key={vehicle.id} value={vehicle.id}>
                 {vehicle.number}
               </option>
             ))}
-          </select>
+          </Select>
         </Field>
 
         <Field label="From">
-          <input type="date" value={from} onChange={(event) => setFrom(event.target.value)} className={inputClass} />
+          <TextInput type="date" value={from} onChange={(event) => setFrom(event.target.value)} />
         </Field>
 
         <Field label="To">
-          <input type="date" value={to} onChange={(event) => setTo(event.target.value)} className={inputClass} />
+          <TextInput type="date" value={to} onChange={(event) => setTo(event.target.value)} />
         </Field>
       </div>
 
       <div className="mt-3 flex gap-2">
-        <button
-          type="button"
+        <Button
+          variant={viewMode === 'markers' ? 'primary' : 'secondary'}
           onClick={() => setViewMode('markers')}
-          className={`flex-1 rounded-md border px-3 py-2 text-sm font-medium ${
-            viewMode === 'markers' ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-300 text-slate-600'
-          }`}
+          className="flex-1 px-3 py-2 text-sm font-medium"
         >
           Markers
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
+          variant={viewMode === 'heatmap' ? 'primary' : 'secondary'}
           onClick={() => setViewMode('heatmap')}
-          className={`flex-1 rounded-md border px-3 py-2 text-sm font-medium ${
-            viewMode === 'heatmap' ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-300 text-slate-600'
-          }`}
+          className="flex-1 px-3 py-2 text-sm font-medium"
         >
           Heatmap
-        </button>
+        </Button>
       </div>
 
       {error && <p className="mt-4 text-sm text-red-600">Could not load sighting locations.</p>}

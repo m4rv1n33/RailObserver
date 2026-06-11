@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { createSighting } from '../api/client'
 import { useVehicleNumbers } from '../hooks/useVehicleNumbers'
 import { VehicleNumberInput } from '../components/VehicleNumberInput'
+import { Button } from '../components/Button'
 
 export function QuickPage() {
   const vehicles = useVehicleNumbers()
@@ -41,14 +42,13 @@ export function QuickPage() {
         />
       </div>
 
-      <button
-        type="button"
+      <Button
         onClick={() => void save()}
         disabled={status === 'saving' || vehicles.all().length === 0}
-        className="mt-4 w-full rounded-md bg-slate-900 py-3 text-lg font-semibold text-white disabled:opacity-40"
+        className="mt-4 w-full py-3 text-lg font-semibold"
       >
         {status === 'saving' ? 'Saving...' : 'Save sighting'}
-      </button>
+      </Button>
 
       {status === 'saved' && <p className="mt-3 text-sm text-emerald-600">Sighting saved.</p>}
       {status === 'error' && (

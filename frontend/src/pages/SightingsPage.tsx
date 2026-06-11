@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { deleteSighting, getSightings } from '../api/client'
 import type { ServiceInfoResponse, SightingResponse, VehicleResponse } from '../api/types'
+import { Button } from '../components/Button'
 
 function formatVehicle(vehicle: VehicleResponse): string {
   return vehicle.vehicleType ? `${vehicle.number} (${vehicle.vehicleType.name})` : vehicle.number
@@ -50,9 +51,12 @@ export function SightingsPage() {
       )}
 
       {sightings !== null && sightings.length > 0 && (
-        <ul className="mt-4 divide-y divide-slate-200 border-y border-slate-200">
+        <ul className="mt-4 space-y-2">
           {sightings.map((sighting) => (
-            <li key={sighting.id} className="flex items-start justify-between gap-2 py-3">
+            <li
+              key={sighting.id}
+              className="flex items-start justify-between gap-2 rounded-md border border-slate-200 bg-white p-3"
+            >
               <div>
                 <p className="text-sm text-slate-500">
                   {new Date(sighting.observedAt).toLocaleString()}
@@ -77,13 +81,13 @@ export function SightingsPage() {
                 )}
                 {sighting.notes && <p className="mt-1 text-sm">{sighting.notes}</p>}
               </div>
-              <button
-                type="button"
+              <Button
+                variant="danger"
                 onClick={() => void handleDelete(sighting.id)}
-                className="shrink-0 text-sm font-medium text-red-600"
+                className="shrink-0 px-2 py-1 text-sm font-medium"
               >
                 Delete
-              </button>
+              </Button>
             </li>
           ))}
         </ul>
