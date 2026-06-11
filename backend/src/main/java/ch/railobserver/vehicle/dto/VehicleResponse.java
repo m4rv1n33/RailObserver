@@ -8,7 +8,8 @@ public record VehicleResponse(
         String number,
         VehicleTypeResponse vehicleType,
         String operator,
-        String manufacturer
+        String manufacturer,
+        String notes
 ) {
 
     public static VehicleResponse from(Vehicle vehicle) {
@@ -20,7 +21,8 @@ public record VehicleResponse(
                 vehicle.getNumber(),
                 vehicleType,
                 vehicle.getOperator(),
-                vehicle.getManufacturer()
+                vehicle.getManufacturer(),
+                vehicle.getNotes()
         );
     }
 }
