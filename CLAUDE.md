@@ -42,7 +42,7 @@ Fleet recognition: `FleetRecognitionService` extracts the leading digit group
 2. Sighting model, basic CRUD - **done**
 3. Mobile logging UI (Quick / Advanced modes; Service mode deferred to milestone 8,
    needs live operational data) - **done**
-4. Statistics
+4. Statistics - **done**
 5. Fleet tracking (seen/missing per fleet)
 6. Vehicle detail pages
 7. Map (sighting locations, heatmap, clustering)
