@@ -1,8 +1,18 @@
+import { Route, Routes } from 'react-router-dom'
+import { AppShell } from './components/AppShell'
+import { QuickPage } from './pages/QuickPage'
+import { AdvancedPage } from './pages/AdvancedPage'
+import { SightingsPage } from './pages/SightingsPage'
+
 function App() {
   return (
-    <div className="min-h-svh bg-slate-50 text-slate-900">
-      <h1 className="p-4 text-xl font-semibold">RailObserver</h1>
-    </div>
+    <AppShell>
+      <Routes>
+        <Route path="/" element={<QuickPage />} />
+        <Route path="/advanced" element={<AdvancedPage />} />
+        <Route path="/sightings" element={<SightingsPage />} />
+      </Routes>
+    </AppShell>
   )
 }
 
