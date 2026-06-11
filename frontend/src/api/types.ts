@@ -112,6 +112,15 @@ export interface MonthlyCountResponse {
   count: number
 }
 
+export interface SightingLocationResponse {
+  id: number
+  latitude: number | null
+  longitude: number | null
+  observedAt: string
+  station: string | null
+  vehicleNumbers: string[]
+}
+
 export interface FleetSummaryResponse {
   id: number
   name: string
