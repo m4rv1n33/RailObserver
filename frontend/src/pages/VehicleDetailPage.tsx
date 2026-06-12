@@ -59,7 +59,7 @@ export function VehicleDetailPage() {
           )}
 
           <Section title="Observation history">
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="text-sm text-slate-500">
               {vehicle.sightingCount} sighting{vehicle.sightingCount === 1 ? '' : 's'}
             </p>
             {vehicle.firstSeen && (
@@ -94,7 +94,7 @@ export function VehicleDetailPage() {
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
               placeholder="e.g. Siemens obstacle detection system installed for testing"
-              className="mt-2 text-sm"
+              className="text-sm"
             />
             <Button
               onClick={() => void saveNotes()}

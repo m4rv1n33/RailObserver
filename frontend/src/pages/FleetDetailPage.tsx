@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { getFleet } from '../api/client'
 import type { FleetDetailResponse } from '../api/types'
 import { ChipList } from '../components/ChipList'
+import { Section } from '../components/Section'
 
 export function FleetDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -44,20 +45,22 @@ export function FleetDetailPage() {
             </div>
           )}
 
-          <ChipList
-            title="Seen"
-            items={fleet.seenVehicles.map((v) => ({
-              key: v.number,
-              label: v.number,
-              to: `/vehicles/${v.id}`,
-            }))}
-            emptyText="None seen yet."
-          />
-          <ChipList
-            title="Missing"
-            items={fleet.missingNumbers.map((number) => ({ key: number, label: number }))}
-            emptyText="None missing."
-          />
+          <Section title="Seen">
+            <ChipList
+              items={fleet.seenVehicles.map((v) => ({
+                key: v.number,
+                label: v.number,
+                to: `/vehicles/${v.id}`,
+              }))}
+              emptyText="None seen yet."
+            />
+          </Section>
+          <Section title="Missing">
+            <ChipList
+              items={fleet.missingNumbers.map((number) => ({ key: number, label: number }))}
+              emptyText="None missing."
+            />
+          </Section>
         </>
       )}
     </div>
