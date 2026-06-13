@@ -1,17 +1,5 @@
--- Broaden fleet coverage across Swiss operators.
---
--- Standard-gauge stock uses the modern UIC scheme where the 3-digit class is the
--- leading group of the running number, so it gets a number_prefix and is picked up
--- by FleetRecognitionService. Narrow-gauge and legacy stock use fractional class
--- names that are not a prefix of the running number, so number_prefix stays NULL
--- (catalogued but not auto-recognized). Narrow-gauge names are operator-prefixed to
--- keep the unique name constraint satisfied (e.g. RhB and AB both run an ABe 8/12).
--- number_prefix must stay unique among non-null values; findByNumberPrefix expects
--- at most one match.
-
--- Correct an earlier mislabel: RABe 528 is the BLS MIKA (Flirt). NINA is RABe 525,
--- added below.
 UPDATE vehicle_type SET family = 'MIKA', fleet_size = 30 WHERE number_prefix = '528';
+UPDATE vehicle_type SET family = 'FLIRT EVO' WHERE number_prefix = '533';
 
 INSERT INTO vehicle_type (name, family, manufacturer, fleet_size, number_prefix) VALUES
     -- SBB long-distance multiple units
