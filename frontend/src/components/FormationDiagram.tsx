@@ -3,18 +3,18 @@ import type { FormationCar, FormationResponse } from '../api/types'
 
 interface Amenity {
   key: 'wheelchair' | 'lowFloor' | 'bike' | 'restaurant' | 'familyZone' | 'businessZone'
-  glyph: string
+  code: string
   label: string
 }
 
-// Symbol, meaning, and the boolean flag carried by each car.
+// SBB / opentransportdata short codes for each amenity the formation API reports.
 const AMENITIES: Amenity[] = [
-  { key: 'wheelchair', glyph: '♿', label: 'Wheelchair access' },
-  { key: 'lowFloor', glyph: 'NF', label: 'Low-floor entry' },
-  { key: 'bike', glyph: '🚲', label: 'Bike spaces' },
-  { key: 'restaurant', glyph: '🍴', label: 'Restaurant / bistro' },
-  { key: 'familyZone', glyph: '🧸', label: 'Family zone' },
-  { key: 'businessZone', glyph: '💼', label: 'Business zone' },
+  { key: 'wheelchair', code: 'BHP', label: 'Wheelchair access' },
+  { key: 'lowFloor', code: 'NF', label: 'Low-floor entry' },
+  { key: 'bike', code: 'VELO', label: 'Bike spaces' },
+  { key: 'restaurant', code: 'WR', label: 'Restaurant / bistro' },
+  { key: 'familyZone', code: 'FZ', label: 'Family zone' },
+  { key: 'businessZone', code: 'BZ', label: 'Business zone' },
 ]
 
 function classLabel(car: FormationCar): string {
@@ -25,7 +25,7 @@ function classLabel(car: FormationCar): string {
     case '2':
       return '2.'
     case '12':
-      return '1·2.'
+      return '1./2.'
     default:
       return ''
   }
@@ -47,21 +47,22 @@ function carStyle(car: FormationCar): string {
   }
 }
 
+// Drop trailing qualifiers (e.g. "Bt511-ETCS(FR)" -> "Bt511") and insert a dash
+// between the letter code and the running number ("AB511" -> "AB-511").
 function shortType(car: FormationCar): string {
-  return car.typeName ? car.typeName.split('-')[0] : ''
+  if (!car.typeName) return ''
+  const base = car.typeName.split('-')[0]
+  const match = base.match(/^([A-Za-z]+)(\d+)$/)
+  return match ? `${match[1]}-${match[2]}` : base
 }
 
-function Badge({ glyph, label }: { glyph: string; label: string }) {
-  const isText = /^[A-Za-z]+$/.test(glyph)
+function CodeBadge({ code, label }: { code: string; label: string }) {
   return (
     <span
       title={label}
-      aria-label={label}
-      className={`inline-flex h-4 min-w-4 items-center justify-center rounded bg-white/80 px-0.5 leading-none ${
-        isText ? 'text-[8px] font-bold text-slate-600' : 'text-[10px]'
-      }`}
+      className="inline-flex h-4 items-center justify-center rounded border border-slate-300 bg-white/80 px-1 text-[8px] font-bold leading-none text-slate-600"
     >
-      {glyph}
+      {code}
     </span>
   )
 }
@@ -80,7 +81,7 @@ function Car({ car, first, last }: { car: FormationCar; first: boolean; last: bo
         <span className="text-[10px] leading-none opacity-70">{shortType(car)}</span>
         <span className="flex min-h-4 flex-wrap items-center justify-center gap-0.5">
           {AMENITIES.filter((amenity) => car[amenity.key]).map((amenity) => (
-            <Badge key={amenity.key} glyph={amenity.glyph} label={amenity.label} />
+            <CodeBadge key={amenity.key} code={amenity.code} label={amenity.label} />
           ))}
         </span>
       </div>
@@ -114,7 +115,7 @@ export function FormationDiagram({ formation }: { formation: FormationResponse }
         <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500">
           {present.map((amenity) => (
             <span key={amenity.key} className="inline-flex items-center gap-1">
-              <Badge glyph={amenity.glyph} label={amenity.label} />
+              <CodeBadge code={amenity.code} label={amenity.label} />
               {amenity.label}
             </span>
           ))}
