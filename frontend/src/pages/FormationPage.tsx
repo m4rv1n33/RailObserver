@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { getFormation } from '../api/client'
 import type { DepartureResponse, FormationResponse } from '../api/types'
 import { DepartureLookup } from '../components/DepartureLookup'
+import { StationAutocomplete } from '../components/StationAutocomplete'
 import { FormationDiagram } from '../components/FormationDiagram'
 import { Field } from '../components/Field'
 import { TextInput } from '../components/Input'
@@ -12,6 +13,8 @@ export function FormationPage() {
   const [trainNumber, setTrainNumber] = useState('')
   const [date, setDate] = useState(() => toDateOnly(new Date()))
   const [operator, setOperator] = useState('')
+  const [station, setStation] = useState('')
+  const [lookupStation, setLookupStation] = useState('')
   const [status, setStatus] = useState<'idle' | 'loading' | 'done' | 'empty' | 'error'>('idle')
   const [formation, setFormation] = useState<FormationResponse | null>(null)
 
@@ -47,7 +50,20 @@ export function FormationPage() {
       <p className="mt-1 text-sm text-slate-500">Look up the carriage formation of a train.</p>
 
       <div className="mt-4 space-y-4">
-        <DepartureLookup onSelect={applyDeparture} />
+        <Field label="Find by station (optional)">
+          <StationAutocomplete
+            value={station}
+            onChange={setStation}
+            onSelect={(selected) => {
+              setStation(selected.name)
+              setLookupStation(selected.name)
+            }}
+          />
+        </Field>
+
+        {lookupStation && (
+          <DepartureLookup station={lookupStation} when={`${date}T12:00`} onSelect={applyDeparture} />
+        )}
 
         <Field label="Train number">
           <TextInput type="text" value={trainNumber} onChange={(event) => setTrainNumber(event.target.value)} />

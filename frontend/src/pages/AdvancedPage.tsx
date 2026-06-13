@@ -6,6 +6,7 @@ import { VehicleNumberInput } from '../components/VehicleNumberInput'
 import { FormationDiagram } from '../components/FormationDiagram'
 import { Field } from '../components/Field'
 import { DepartureLookup } from '../components/DepartureLookup'
+import { StationAutocomplete } from '../components/StationAutocomplete'
 import { TextInput, Textarea } from '../components/Input'
 import { Button } from '../components/Button'
 import { toDateOnly, toDateTimeLocal } from '../lib/datetime'
@@ -14,6 +15,7 @@ export function AdvancedPage() {
   const vehicles = useVehicleNumbers()
   const [observedAt, setObservedAt] = useState(() => toDateTimeLocal(new Date()))
   const [station, setStation] = useState('')
+  const [lookupStation, setLookupStation] = useState('')
   const [latitude, setLatitude] = useState<number | null>(null)
   const [longitude, setLongitude] = useState<number | null>(null)
   const [locationStatus, setLocationStatus] = useState<'idle' | 'locating' | 'error'>('idle')
@@ -70,6 +72,7 @@ export function AdvancedPage() {
     vehicles.reset()
     setObservedAt(toDateTimeLocal(new Date()))
     setStation('')
+    setLookupStation('')
     setLatitude(null)
     setLongitude(null)
     setLocationStatus('idle')
@@ -151,7 +154,14 @@ export function AdvancedPage() {
         </Field>
 
         <Field label="Station">
-          <TextInput type="text" value={station} onChange={(event) => setStation(event.target.value)} />
+          <StationAutocomplete
+            value={station}
+            onChange={setStation}
+            onSelect={(selected) => {
+              setStation(selected.name)
+              setLookupStation(selected.name)
+            }}
+          />
         </Field>
 
         <Field label="Location">
@@ -173,7 +183,8 @@ export function AdvancedPage() {
         <fieldset className="space-y-4 rounded-md border border-slate-200 p-3">
           <legend className="px-1 text-sm font-medium text-slate-700">Service</legend>
 
-          <DepartureLookup onSelect={applyDeparture} initialQuery={station} />
+          <p className="text-xs text-slate-500">Departures for the station and observed time above.</p>
+          <DepartureLookup station={lookupStation} when={observedAt} onSelect={applyDeparture} />
 
           <Field label="Line">
             <TextInput type="text" value={line} onChange={(event) => setLine(event.target.value)} />
@@ -185,14 +196,6 @@ export function AdvancedPage() {
 
           <Field label="Destination">
             <TextInput type="text" value={destination} onChange={(event) => setDestination(event.target.value)} />
-          </Field>
-
-          <Field label="Departure time">
-            <TextInput
-              type="datetime-local"
-              value={departureTime}
-              onChange={(event) => setDepartureTime(event.target.value)}
-            />
           </Field>
         </fieldset>
 

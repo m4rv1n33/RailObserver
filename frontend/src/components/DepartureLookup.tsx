@@ -1,13 +1,11 @@
 import { useEffect, useState } from 'react'
-import { getDepartures, getStations } from '../api/client'
-import type { DepartureResponse, StationResponse } from '../api/types'
-import { Field } from './Field'
-import { TextInput } from './Input'
-import { Button } from './Button'
+import { getDepartures } from '../api/client'
+import type { DepartureResponse } from '../api/types'
 
 interface DepartureLookupProps {
+  station: string
+  when?: string
   onSelect: (departure: DepartureResponse) => void
-  initialQuery?: string
 }
 
 function formatTime(value: string | null): string {
@@ -15,159 +13,69 @@ function formatTime(value: string | null): string {
   return new Date(value).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
 
-export function DepartureLookup({ onSelect, initialQuery = '' }: DepartureLookupProps) {
-  const [expanded, setExpanded] = useState(false)
-  const [query, setQuery] = useState('')
-  const [stations, setStations] = useState<StationResponse[]>([])
-  const [station, setStation] = useState<StationResponse | null>(null)
+export function DepartureLookup({ station, when, onSelect }: DepartureLookupProps) {
   const [departures, setDepartures] = useState<DepartureResponse[] | null>(null)
-  const [error, setError] = useState(false)
+  const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle')
 
   useEffect(() => {
-    if (station) return
-    let cancelled = false
-    const timeout = setTimeout(() => {
-      const trimmed = query.trim()
-      if (trimmed.length < 2) {
-        if (!cancelled) setStations([])
-        return
-      }
-      getStations(trimmed)
-        .then((result) => {
-          if (!cancelled) setStations(result)
-        })
-        .catch(() => {
-          if (!cancelled) setStations([])
-        })
-    }, 300)
-    return () => {
-      cancelled = true
-      clearTimeout(timeout)
+    const trimmed = station.trim()
+    if (!trimmed) {
+      setDepartures(null)
+      setStatus('idle')
+      return
     }
-  }, [query, station])
-
-  useEffect(() => {
-    if (!station) return
     let cancelled = false
-    getDepartures(station.name, 8)
+    setStatus('loading')
+    getDepartures(trimmed, 8, when)
       .then((result) => {
         if (!cancelled) {
           setDepartures(result)
-          setError(false)
+          setStatus('idle')
         }
       })
       .catch(() => {
-        if (!cancelled) setError(true)
+        if (!cancelled) setStatus('error')
       })
     return () => {
       cancelled = true
     }
-  }, [station])
+  }, [station, when])
 
-  function toggle() {
-    if (!expanded && query.trim() === '' && initialQuery.trim() !== '') {
-      setQuery(initialQuery)
-    }
-    setExpanded((prev) => !prev)
-  }
-
-  function selectStation(selected: StationResponse) {
-    setStation(selected)
-    setQuery(selected.name)
-    setStations([])
-    setDepartures(null)
-    setError(false)
-  }
-
-  function clearStation() {
-    setStation(null)
-    setQuery('')
-    setDepartures(null)
-    setError(false)
-  }
-
-  function selectDeparture(departure: DepartureResponse) {
-    onSelect(departure)
-    setExpanded(false)
+  if (!station.trim()) {
+    return <p className="text-sm text-slate-500">Pick a station to list its departures.</p>
   }
 
   return (
-    <div>
-      <Button variant="secondary" onClick={toggle} className="w-full px-3 py-2 text-sm font-medium">
-        {expanded ? 'Hide timetable lookup' : 'Look up from timetable'}
-      </Button>
+    <div className="space-y-2">
+      {status === 'loading' && <p className="text-sm text-slate-500">Loading departures...</p>}
+      {status === 'error' && <p className="text-sm text-red-600">Could not load departures.</p>}
 
-      {expanded && (
-        <div className="mt-3 space-y-3">
-          <Field label="Station">
-            <div className="relative">
-              <TextInput
-                type="text"
-                value={query}
-                onChange={(event) => {
-                  setQuery(event.target.value)
-                  setStation(null)
-                }}
-                placeholder="Search station..."
-              />
-              {stations.length > 0 && (
-                <ul className="absolute z-10 mt-1 w-full rounded-md border border-slate-200 bg-white shadow-md">
-                  {stations.map((suggestion) => (
-                    <li key={suggestion.id}>
-                      <button
-                        type="button"
-                        onClick={() => selectStation(suggestion)}
-                        className="block w-full px-3 py-2 text-left text-sm hover:bg-slate-100"
-                      >
-                        {suggestion.name}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </Field>
+      {status === 'idle' && departures !== null && departures.length === 0 && (
+        <p className="text-sm text-slate-500">No departures around this time.</p>
+      )}
 
-          {station && (
-            <Button variant="ghost" onClick={clearStation} className="text-sm underline">
-              Clear
-            </Button>
-          )}
-
-          {error && <p className="text-sm text-red-600">Could not load departures.</p>}
-
-          {station && departures === null && !error && (
-            <p className="text-sm text-slate-500">Loading departures...</p>
-          )}
-
-          {departures !== null && departures.length === 0 && (
-            <p className="text-sm text-slate-500">No upcoming departures.</p>
-          )}
-
-          {departures !== null && departures.length > 0 && (
-            <ul className="divide-y divide-slate-200 rounded-md border border-slate-200">
-              {departures.map((departure, index) => (
-                <li key={index}>
-                  <button
-                    type="button"
-                    onClick={() => selectDeparture(departure)}
-                    className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-slate-100"
-                  >
-                    <span>
-                      <span className="font-medium">
-                        {[departure.line, departure.trainNumber].filter(Boolean).join(' ')}
-                      </span>
-                      {' to '}
-                      {departure.destination}
-                      {departure.platform ? ` (Platform ${departure.platform})` : ''}
-                    </span>
-                    <span className="text-slate-500">{formatTime(departure.departureTime)}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+      {departures !== null && departures.length > 0 && (
+        <ul className="divide-y divide-slate-200 rounded-md border border-slate-200">
+          {departures.map((departure, index) => (
+            <li key={index}>
+              <button
+                type="button"
+                onClick={() => onSelect(departure)}
+                className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-slate-100"
+              >
+                <span>
+                  <span className="font-medium">
+                    {[departure.line, departure.trainNumber].filter(Boolean).join(' ')}
+                  </span>
+                  {' to '}
+                  {departure.destination}
+                  {departure.platform ? ` (Pl. ${departure.platform})` : ''}
+                </span>
+                <span className="text-slate-500">{formatTime(departure.departureTime)}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   )
