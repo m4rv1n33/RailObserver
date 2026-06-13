@@ -48,12 +48,29 @@ class FormationServiceTest {
         FormationResponse result = service.detect("4824", LocalDate.of(2026, 6, 13), "SBB");
 
         assertThat(result.units()).containsExactly(
-                new FormationUnitResponse("512-056", null, "front"),
-                new FormationUnitResponse("460-037", "Re 460", "back"));
+                new FormationUnitResponse("512-056", null, false, "front"),
+                new FormationUnitResponse("460-037", "Re 460", false, "back"));
         // The hauled coach appears in the diagram but carries no unit number.
         assertThat(result.cars()).hasSize(4);
         assertThat(result.cars().get(3).tractive()).isFalse();
         assertThat(result.cars().get(3).unitNumber()).isNull();
+    }
+
+    @Test
+    void detect_marksUnitLowFloorFromRecognizedFleet() {
+        when(provider.getFormation(any(), any(), any())).thenReturn(List.of(
+                car(1, "94 85 0 521 001-0", "0521001")
+        ));
+        VehicleType flirt = new VehicleType();
+        flirt.setName("RABe 521");
+        flirt.setLowFloor(true);
+        when(recognition.recognize("521-001")).thenReturn(Optional.of(flirt));
+
+        FormationResponse result = service.detect("100", LocalDate.of(2026, 6, 13), "SBB");
+
+        assertThat(result.units()).singleElement()
+                .extracting(FormationUnitResponse::detectedFleet, FormationUnitResponse::lowFloor)
+                .containsExactly("RABe 521", true);
     }
 
     @Test

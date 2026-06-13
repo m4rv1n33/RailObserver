@@ -38,6 +38,9 @@ public class VehicleType {
     @Column(name = "number_prefix")
     private String numberPrefix;
 
+    @Column(name = "low_floor", nullable = false)
+    private boolean lowFloor;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
