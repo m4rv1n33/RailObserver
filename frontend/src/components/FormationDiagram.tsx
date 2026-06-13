@@ -1,20 +1,22 @@
 import { Fragment } from 'react'
 import type { FormationCar, FormationResponse } from '../api/types'
+import { SbbIcon } from './sbbIcons'
+import type { SbbIconName } from './sbbIcons'
 
 interface Amenity {
   key: 'wheelchair' | 'lowFloor' | 'bike' | 'restaurant' | 'familyZone' | 'businessZone'
-  code: string
+  icon: SbbIconName
   label: string
 }
 
-// SBB / opentransportdata short codes for each amenity the formation API reports.
+// Each amenity the formation API reports, with its SBB icon.
 const AMENITIES: Amenity[] = [
-  { key: 'wheelchair', code: 'BHP', label: 'Wheelchair access' },
-  { key: 'lowFloor', code: 'NF', label: 'Low-floor entry' },
-  { key: 'bike', code: 'VELO', label: 'Bike spaces' },
-  { key: 'restaurant', code: 'WR', label: 'Restaurant / bistro' },
-  { key: 'familyZone', code: 'FZ', label: 'Family zone' },
-  { key: 'businessZone', code: 'BZ', label: 'Business zone' },
+  { key: 'wheelchair', icon: 'wheelchair', label: 'Wheelchair access' },
+  { key: 'lowFloor', icon: 'lowFloor', label: 'Low-floor entry' },
+  { key: 'bike', icon: 'bike', label: 'Bike spaces' },
+  { key: 'restaurant', icon: 'restaurant', label: 'Restaurant / bistro' },
+  { key: 'familyZone', icon: 'familyZone', label: 'Family zone' },
+  { key: 'businessZone', icon: 'businessZone', label: 'Business zone' },
 ]
 
 function classLabel(car: FormationCar): string {
@@ -56,17 +58,6 @@ function shortType(car: FormationCar): string {
   return match ? `${match[1]}-${match[2]}` : base
 }
 
-function CodeBadge({ code, label }: { code: string; label: string }) {
-  return (
-    <span
-      title={label}
-      className="inline-flex h-4 items-center justify-center rounded border border-slate-300 bg-white/80 px-1 text-[8px] font-bold leading-none text-slate-600"
-    >
-      {code}
-    </span>
-  )
-}
-
 function Car({ car, first, last }: { car: FormationCar; first: boolean; last: boolean }) {
   const ends = `${first ? 'rounded-l-2xl ' : ''}${last ? 'rounded-r-2xl ' : ''}`
   return (
@@ -79,9 +70,9 @@ function Car({ car, first, last }: { car: FormationCar; first: boolean; last: bo
       >
         <span className="text-base font-bold leading-none">{classLabel(car)}</span>
         <span className="text-[10px] leading-none opacity-70">{shortType(car)}</span>
-        <span className="flex min-h-4 flex-wrap items-center justify-center gap-0.5">
+        <span className="flex min-h-4 flex-wrap items-center justify-center gap-1">
           {AMENITIES.filter((amenity) => car[amenity.key]).map((amenity) => (
-            <CodeBadge key={amenity.key} code={amenity.code} label={amenity.label} />
+            <SbbIcon key={amenity.key} name={amenity.icon} title={amenity.label} className="h-4 w-auto" />
           ))}
         </span>
       </div>
@@ -115,7 +106,7 @@ export function FormationDiagram({ formation }: { formation: FormationResponse }
         <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500">
           {present.map((amenity) => (
             <span key={amenity.key} className="inline-flex items-center gap-1">
-              <CodeBadge code={amenity.code} label={amenity.label} />
+              <SbbIcon name={amenity.icon} title={amenity.label} className="h-4 w-auto text-slate-600" />
               {amenity.label}
             </span>
           ))}
