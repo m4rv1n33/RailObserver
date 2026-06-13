@@ -1,12 +1,15 @@
 package ch.railobserver.transport;
 
-import ch.railobserver.transport.dto.FormationVehicleResponse;
+import ch.railobserver.transport.dto.FormationCarResponse;
+import ch.railobserver.transport.dto.FormationResponse;
+import ch.railobserver.transport.dto.FormationUnitResponse;
 import ch.railobserver.vehicle.FleetRecognitionService;
 import ch.railobserver.vehicletype.VehicleType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -36,24 +39,39 @@ public class FormationService {
         this.defaultEvu = defaultEvu;
     }
 
-    public List<FormationVehicleResponse> detect(String trainNumber, LocalDate operationDate, String operator) {
-        Map<String, FormationVehicleResponse> byNumber = new LinkedHashMap<>();
-        for (FormationVehicle vehicle : provider.getFormation(trainNumber, operationDate, resolveEvu(operator))) {
-            // EVNs of tractive units and railcars start with a 9 (UIC types 90-99).
-            // Hauled coaches (types 5x, 2x, ...) are not tracked as fleets, so skip them.
-            if (vehicle.evn() == null || !vehicle.evn().startsWith("9")) {
-                continue;
-            }
-            String number = toTrainsetNumber(vehicle.vehicleNumber());
-            if (number == null) {
-                continue;
-            }
-            byNumber.computeIfAbsent(number, n -> {
-                String fleet = fleetRecognitionService.recognize(n).map(VehicleType::getName).orElse(null);
-                return new FormationVehicleResponse(n, fleet);
-            });
+    public FormationResponse detect(String trainNumber, LocalDate operationDate, String operator) {
+        List<FormationVehicle> vehicles = provider.getFormation(trainNumber, operationDate, resolveEvu(operator));
+        if (vehicles.isEmpty()) {
+            return FormationResponse.empty();
         }
-        return List.copyOf(byNumber.values());
+
+        List<FormationCarResponse> cars = new ArrayList<>();
+        Map<String, FormationUnitResponse> unitsByNumber = new LinkedHashMap<>();
+        for (FormationVehicle vehicle : vehicles) {
+            // EVNs of tractive units and railcars start with a 9 (UIC types 90-99).
+            // Hauled coaches (types 5x, 2x, ...) are shown in the diagram but not
+            // tracked as recordable fleets.
+            boolean tractive = vehicle.evn() != null && vehicle.evn().startsWith("9");
+            String unitNumber = tractive ? toTrainsetNumber(vehicle.vehicleNumber()) : null;
+            if (tractive && unitNumber != null) {
+                unitsByNumber.computeIfAbsent(unitNumber, n -> {
+                    String fleet = fleetRecognitionService.recognize(n).map(VehicleType::getName).orElse(null);
+                    return new FormationUnitResponse(n, fleet, null);
+                });
+            }
+            cars.add(new FormationCarResponse(
+                    vehicle.position(),
+                    toRunningNumber(vehicle.vehicleNumber()),
+                    tractive,
+                    vehicle.travelClass(),
+                    vehicle.sectors(),
+                    vehicle.lowFloor(),
+                    vehicle.wheelchair(),
+                    unitNumber));
+        }
+
+        cars.sort((a, b) -> Integer.compare(a.position(), b.position()));
+        return new FormationResponse(List.copyOf(cars), labelPositions(unitsByNumber.values()));
     }
 
     // opendata.ch operator strings ("SBB", "THURBO", "BLS-bls", "SOB-sob") map to
@@ -66,6 +84,22 @@ public class FormationService {
         }
         String normalized = operator.toUpperCase(Locale.ROOT).split("-")[0].strip();
         return EVU_BY_OPERATOR.getOrDefault(normalized, normalized);
+    }
+
+    // A train of exactly two units gets front/back labels; the order follows the
+    // formation position. Single units and longer trains carry no label.
+    private static List<FormationUnitResponse> labelPositions(java.util.Collection<FormationUnitResponse> units) {
+        List<FormationUnitResponse> list = new ArrayList<>(units);
+        if (list.size() == 2) {
+            return List.of(
+                    withLabel(list.get(0), "front"),
+                    withLabel(list.get(1), "back"));
+        }
+        return List.copyOf(list);
+    }
+
+    private static FormationUnitResponse withLabel(FormationUnitResponse unit, String label) {
+        return new FormationUnitResponse(unit.number(), unit.detectedFleet(), label);
     }
 
     // Coaches of one unit share the trailing 6 digits of the 7-digit running number;
@@ -81,6 +115,19 @@ public class FormationService {
         if (digits.length() == SWISS_RUNNING_NUMBER_LENGTH) {
             String runningNumber = digits.substring(1);
             return runningNumber.substring(0, 3) + "-" + runningNumber.substring(3);
+        }
+        return digits.isEmpty() ? null : digits;
+    }
+
+    // Display form of an individual car's full running number (e.g. "1512042"
+    // -> "512-042"), keeping the per-car leading digit out of the way.
+    private static String toRunningNumber(String vehicleNumber) {
+        if (vehicleNumber == null) {
+            return null;
+        }
+        String digits = vehicleNumber.replaceAll("\\D", "");
+        if (digits.length() == SWISS_RUNNING_NUMBER_LENGTH) {
+            return digits.substring(1, 4) + "-" + digits.substring(4);
         }
         return digits.isEmpty() ? null : digits;
     }

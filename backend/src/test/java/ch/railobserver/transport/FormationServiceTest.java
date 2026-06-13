@@ -1,6 +1,7 @@
 package ch.railobserver.transport;
 
-import ch.railobserver.transport.dto.FormationVehicleResponse;
+import ch.railobserver.transport.dto.FormationResponse;
+import ch.railobserver.transport.dto.FormationUnitResponse;
 import ch.railobserver.vehicle.FleetRecognitionService;
 import ch.railobserver.vehicletype.VehicleType;
 import org.junit.jupiter.api.Test;
@@ -23,27 +24,65 @@ class FormationServiceTest {
     private final FleetRecognitionService recognition = mock(FleetRecognitionService.class);
     private final FormationService service = new FormationService(provider, recognition, "SBBP");
 
+    private static FormationVehicle car(int position, String evn, String vehicleNumber) {
+        return new FormationVehicle(position, evn, vehicleNumber, null, null, null, false, false);
+    }
+
     @Test
-    void detect_dedupesTrainsets_skipsCoaches_andResolvesFleet() {
+    void detect_dedupesTrainsetsIntoUnits_skipsCoaches_andResolvesFleet() {
         when(provider.getFormation(any(), any(), any())).thenReturn(List.of(
-                // RABe 512 set 056: six coaches sharing the trailing six digits
-                new FormationVehicle("94 85 1 512 056-6", "1512056"),
-                new FormationVehicle("94 85 2 512 056-4", "2512056"),
+                // RABe 512 set 056: two coaches sharing the trailing six digits
+                car(1, "94 85 1 512 056-6", "1512056"),
+                car(2, "94 85 2 512 056-4", "2512056"),
                 // Re 460 locomotive
-                new FormationVehicle("91 85 4 460 037-5", "4460037"),
-                // hauled coach (EVN type 50) must be ignored
-                new FormationVehicle("50 85 16-94 157-4", "1694157")
+                car(3, "91 85 4 460 037-5", "4460037"),
+                // hauled coach (EVN type 50) is not a recordable unit
+                car(4, "50 85 16-94 157-4", "1694157")
         ));
         VehicleType re460 = new VehicleType();
         re460.setName("Re 460");
         when(recognition.recognize("460-037")).thenReturn(Optional.of(re460));
         when(recognition.recognize("512-056")).thenReturn(Optional.empty());
 
-        List<FormationVehicleResponse> result = service.detect("4824", LocalDate.of(2026, 6, 13), "SBB");
+        FormationResponse result = service.detect("4824", LocalDate.of(2026, 6, 13), "SBB");
 
-        assertThat(result).containsExactly(
-                new FormationVehicleResponse("512-056", null),
-                new FormationVehicleResponse("460-037", "Re 460"));
+        assertThat(result.units()).containsExactly(
+                new FormationUnitResponse("512-056", null, "front"),
+                new FormationUnitResponse("460-037", "Re 460", "back"));
+        // The hauled coach appears in the diagram but carries no unit number.
+        assertThat(result.cars()).hasSize(4);
+        assertThat(result.cars().get(3).tractive()).isFalse();
+        assertThat(result.cars().get(3).unitNumber()).isNull();
+    }
+
+    @Test
+    void detect_labelsTwoUnitsFrontAndBack() {
+        when(provider.getFormation(any(), any(), any())).thenReturn(List.of(
+                car(1, "94 85 0 512 002-0", "0512002"),
+                car(2, "94 85 0 512 006-1", "0512006")
+        ));
+        when(recognition.recognize(any())).thenReturn(Optional.empty());
+
+        FormationResponse result = service.detect("100", LocalDate.of(2026, 6, 13), "SBB");
+
+        assertThat(result.units()).extracting(FormationUnitResponse::number, FormationUnitResponse::positionLabel)
+                .containsExactly(
+                        org.assertj.core.groups.Tuple.tuple("512-002", "front"),
+                        org.assertj.core.groups.Tuple.tuple("512-006", "back"));
+    }
+
+    @Test
+    void detect_singleUnitHasNoPositionLabel() {
+        when(provider.getFormation(any(), any(), any())).thenReturn(List.of(
+                car(1, "91 85 4 460 037-5", "4460037")
+        ));
+        when(recognition.recognize(any())).thenReturn(Optional.empty());
+
+        FormationResponse result = service.detect("100", LocalDate.of(2026, 6, 13), "SBB");
+
+        assertThat(result.units()).singleElement()
+                .extracting(FormationUnitResponse::positionLabel)
+                .isNull();
     }
 
     @Test

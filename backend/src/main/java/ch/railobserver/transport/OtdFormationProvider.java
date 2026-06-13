@@ -63,10 +63,8 @@ public class OtdFormationProvider implements FormationProvider {
             return response.formations().stream()
                     .filter(formation -> formation.formationVehicles() != null)
                     .flatMap(formation -> formation.formationVehicles().stream())
-                    .map(Node::vehicleIdentifier)
+                    .map(OtdFormationProvider::toVehicle)
                     .filter(Objects::nonNull)
-                    .filter(identifier -> identifier.evn() != null && identifier.vehicleNumber() != null)
-                    .map(identifier -> new FormationVehicle(identifier.evn(), identifier.vehicleNumber()))
                     .toList();
         } catch (HttpClientErrorException.NotFound | HttpClientErrorException.BadRequest e) {
             // Expected: 404 when no formation is published for this journey (e.g. a
@@ -79,6 +77,58 @@ public class OtdFormationProvider implements FormationProvider {
         }
     }
 
+    // Map one API car node to our raw vehicle. Returns null when the node lacks
+    // the identifying numbers we need. Unknown/missing rich fields degrade to
+    // null/false rather than failing the whole lookup.
+    private static FormationVehicle toVehicle(Node node) {
+        VehicleIdentifier id = node.vehicleIdentifier();
+        if (id == null || id.evn() == null || id.vehicleNumber() == null) {
+            return null;
+        }
+        VehicleProperties props = node.vehicleProperties();
+        return new FormationVehicle(
+                node.position(),
+                id.evn(),
+                id.vehicleNumber(),
+                id.typeCodeName(),
+                travelClass(props),
+                firstSectors(node.formationVehicleAtScheduledStops()),
+                props != null && Boolean.TRUE.equals(props.lowFloorTrolley()),
+                props != null && props.wheelchairSymbolProperties() != null);
+    }
+
+    private static String travelClass(VehicleProperties props) {
+        if (props == null) {
+            return null;
+        }
+        boolean first = positive(props.number1class());
+        boolean second = positive(props.number2class());
+        if (first && second) {
+            return "12";
+        }
+        if (first) {
+            return "1";
+        }
+        return second ? "2" : null;
+    }
+
+    private static boolean positive(Integer value) {
+        return value != null && value > 0;
+    }
+
+    // Sectors can vary per scheduled stop; the boarding diagram only needs one
+    // representative span, so take the first non-blank value.
+    private static String firstSectors(List<ScheduledStop> stops) {
+        if (stops == null) {
+            return null;
+        }
+        return stops.stream()
+                .map(ScheduledStop::sectors)
+                .filter(s -> s != null && !s.isBlank())
+                .findFirst()
+                .orElse(null);
+    }
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     private record FormationFullResponse(List<Formation> formations) {
     }
@@ -88,10 +138,26 @@ public class OtdFormationProvider implements FormationProvider {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    private record Node(VehicleIdentifier vehicleIdentifier) {
+    private record Node(
+            int position,
+            VehicleIdentifier vehicleIdentifier,
+            VehicleProperties vehicleProperties,
+            List<ScheduledStop> formationVehicleAtScheduledStops) {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    private record VehicleIdentifier(String evn, String vehicleNumber) {
+    private record VehicleIdentifier(String evn, String vehicleNumber, String typeCodeName) {
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private record VehicleProperties(
+            Integer number1class,
+            Integer number2class,
+            Boolean lowFloorTrolley,
+            Object wheelchairSymbolProperties) {
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private record ScheduledStop(String sectors) {
     }
 }

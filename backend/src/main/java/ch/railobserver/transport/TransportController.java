@@ -1,7 +1,7 @@
 package ch.railobserver.transport;
 
 import ch.railobserver.transport.dto.DepartureResponse;
-import ch.railobserver.transport.dto.FormationVehicleResponse;
+import ch.railobserver.transport.dto.FormationResponse;
 import ch.railobserver.transport.dto.StationResponse;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,7 +37,7 @@ public class TransportController {
     }
 
     @GetMapping("/formation")
-    public List<FormationVehicleResponse> getFormation(
+    public FormationResponse getFormation(
             @RequestParam String trainNumber,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam(required = false) String operator) {
