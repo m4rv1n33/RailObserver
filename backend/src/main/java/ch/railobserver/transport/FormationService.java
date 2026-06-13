@@ -45,15 +45,17 @@ public class FormationService {
 
     // Coaches of one unit share the trailing 6 digits of the 7-digit running number;
     // the leading digit only marks the position within the set. Dropping it yields
-    // the trainset number (e.g. "1512042" -> "512042"), whose first three digits are
-    // the fleet class the FleetRecognitionService matches against.
+    // the trainset number, formatted as class-running (e.g. "1512042" -> "512-042").
+    // The leading three digits remain the fleet class the FleetRecognitionService
+    // matches against.
     private static String toTrainsetNumber(String vehicleNumber) {
         if (vehicleNumber == null) {
             return null;
         }
         String digits = vehicleNumber.replaceAll("\\D", "");
         if (digits.length() == SWISS_RUNNING_NUMBER_LENGTH) {
-            return digits.substring(1);
+            String runningNumber = digits.substring(1);
+            return runningNumber.substring(0, 3) + "-" + runningNumber.substring(3);
         }
         return digits.isEmpty() ? null : digits;
     }

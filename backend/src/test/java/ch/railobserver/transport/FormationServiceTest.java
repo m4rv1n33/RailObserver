@@ -33,13 +33,13 @@ class FormationServiceTest {
         ));
         VehicleType re460 = new VehicleType();
         re460.setName("Re 460");
-        when(recognition.recognize("460037")).thenReturn(Optional.of(re460));
-        when(recognition.recognize("512056")).thenReturn(Optional.empty());
+        when(recognition.recognize("460-037")).thenReturn(Optional.of(re460));
+        when(recognition.recognize("512-056")).thenReturn(Optional.empty());
 
         List<FormationVehicleResponse> result = service.detect("4824", LocalDate.of(2026, 6, 13));
 
         assertThat(result).containsExactly(
-                new FormationVehicleResponse("512056", null),
-                new FormationVehicleResponse("460037", "Re 460"));
+                new FormationVehicleResponse("512-056", null),
+                new FormationVehicleResponse("460-037", "Re 460"));
     }
 }
