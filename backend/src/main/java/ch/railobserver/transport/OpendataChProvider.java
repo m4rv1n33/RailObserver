@@ -77,7 +77,16 @@ public class OpendataChProvider implements TransportDataProvider {
             departureTime = toInstant(connection.stop());
             platform = connection.stop().platform();
         }
-        return new DepartureResponse(connection.name(), connection.number(), connection.to(), departureTime, platform);
+        // opendata.ch puts the journey/train number in "name" (e.g. "018654") and the line
+        // in category + number (e.g. "S" + "6" -> "S6"). Do not confuse the two.
+        return new DepartureResponse(buildLine(connection), connection.name(), connection.to(), departureTime, platform);
+    }
+
+    private static String buildLine(Connection connection) {
+        String category = connection.category() == null ? "" : connection.category().trim();
+        String number = connection.number() == null ? "" : connection.number().trim();
+        String line = (category + number).trim();
+        return line.isEmpty() ? null : line;
     }
 
     private static Instant toInstant(Stop stop) {
