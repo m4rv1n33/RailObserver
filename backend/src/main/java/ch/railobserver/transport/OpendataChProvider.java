@@ -79,7 +79,8 @@ public class OpendataChProvider implements TransportDataProvider {
         }
         // opendata.ch puts the journey/train number in "name" (e.g. "018654") and the line
         // in category + number (e.g. "S" + "6" -> "S6"). Do not confuse the two.
-        return new DepartureResponse(buildLine(connection), connection.name(), connection.to(), departureTime, platform);
+        return new DepartureResponse(buildLine(connection), connection.name(), connection.to(),
+                departureTime, platform, connection.operator());
     }
 
     private static String buildLine(Connection connection) {
@@ -112,7 +113,7 @@ public class OpendataChProvider implements TransportDataProvider {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    private record Connection(String name, String category, String number, String to, Stop stop) {
+    private record Connection(String name, String category, String number, String to, String operator, Stop stop) {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

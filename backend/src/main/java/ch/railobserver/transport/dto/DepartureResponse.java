@@ -7,6 +7,7 @@ public record DepartureResponse(
         String trainNumber,
         String destination,
         Instant departureTime,
-        String platform
+        String platform,
+        String operator
 ) {
 }

@@ -39,7 +39,8 @@ public class TransportController {
     @GetMapping("/formation")
     public List<FormationVehicleResponse> getFormation(
             @RequestParam String trainNumber,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        return formationService.detect(trainNumber, date);
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) String operator) {
+        return formationService.detect(trainNumber, date, operator);
     }
 }

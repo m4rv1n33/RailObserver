@@ -23,17 +23,14 @@ public class OtdFormationProvider implements FormationProvider {
 
     private final RestClient restClient;
     private final String token;
-    private final String evu;
     private final boolean enabled;
 
     public OtdFormationProvider(
             RestClient.Builder builder,
             @Value("${railobserver.formation.base-url}") String baseUrl,
-            @Value("${railobserver.formation.token:}") String token,
-            @Value("${railobserver.formation.default-evu:SBBP}") String evu) {
+            @Value("${railobserver.formation.token:}") String token) {
         this.restClient = builder.baseUrl(baseUrl).build();
         this.token = token;
-        this.evu = evu;
         this.enabled = token != null && !token.isBlank();
         if (!enabled) {
             log.info("Formation lookup disabled: no railobserver.formation.token configured");
@@ -41,8 +38,8 @@ public class OtdFormationProvider implements FormationProvider {
     }
 
     @Override
-    public List<FormationVehicle> getFormation(String trainNumber, LocalDate operationDate) {
-        if (!enabled) {
+    public List<FormationVehicle> getFormation(String trainNumber, LocalDate operationDate, String evu) {
+        if (!enabled || evu == null || evu.isBlank()) {
             return List.of();
         }
         String number = trainNumber == null ? "" : trainNumber.replaceFirst("^0+(?=\\d)", "").trim();
@@ -71,10 +68,10 @@ public class OtdFormationProvider implements FormationProvider {
                     .filter(identifier -> identifier.evn() != null && identifier.vehicleNumber() != null)
                     .map(identifier -> new FormationVehicle(identifier.evn(), identifier.vehicleNumber()))
                     .toList();
-        } catch (HttpClientErrorException.NotFound e) {
-            // Expected when no formation is published for this journey, e.g. when SBB
-            // runs it with a non-standard set. The showcase app behaves the same way.
-            log.debug("No formation published for train '{}' on {}", number, date);
+        } catch (HttpClientErrorException.NotFound | HttpClientErrorException.BadRequest e) {
+            // Expected: 404 when no formation is published for this journey (e.g. a
+            // non-standard set), 400 when the operator is not covered by the API.
+            log.debug("No formation for train '{}' on {} (evu={}): {}", number, date, evu, e.getStatusCode());
             return List.of();
         } catch (RestClientException e) {
             log.warn("Could not load formation for train '{}' on {}: {}", number, date, e.getMessage());

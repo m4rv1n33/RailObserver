@@ -5,5 +5,5 @@ import java.util.List;
 
 public interface FormationProvider {
 
-    List<FormationVehicle> getFormation(String trainNumber, LocalDate operationDate);
+    List<FormationVehicle> getFormation(String trainNumber, LocalDate operationDate, String evu);
 }
