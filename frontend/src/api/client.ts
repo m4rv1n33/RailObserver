@@ -3,7 +3,7 @@ import type {
   CreateVehicleRequest,
   DepartureResponse,
   FamilyCountResponse,
-  FormationVehicleResponse,
+  FormationResponse,
   FleetCountResponse,
   FleetDetailResponse,
   FleetSummaryResponse,
@@ -158,7 +158,7 @@ export function getFormation(
   trainNumber: string,
   date?: string,
   operator?: string,
-): Promise<FormationVehicleResponse[]> {
+): Promise<FormationResponse> {
   const params = new URLSearchParams({ trainNumber })
   if (date) params.set('date', date)
   if (operator) params.set('operator', operator)

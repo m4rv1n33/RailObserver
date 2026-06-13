@@ -61,6 +61,7 @@ public class SightingService {
         sighting.setDirection(request.direction());
         sighting.setNotes(request.notes());
         sighting.setService(toServiceInfo(request.service()));
+        sighting.setFormation(request.formation());
 
         List<String> vehicleNumbers = request.vehicleNumbers();
         for (int position = 0; position < vehicleNumbers.size(); position++) {

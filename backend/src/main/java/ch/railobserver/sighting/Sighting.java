@@ -15,6 +15,8 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -46,6 +48,10 @@ public class Sighting {
     private ServiceInfo service;
 
     private String notes;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "formation")
+    private FormationSnapshot formation;
 
     @OneToMany(mappedBy = "sighting", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("position")

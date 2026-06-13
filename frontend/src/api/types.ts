@@ -57,6 +57,7 @@ export interface SightingResponse {
   direction: string | null
   service: ServiceInfoResponse | null
   notes: string | null
+  formation: FormationResponse | null
   vehicles: VehicleResponse[]
 }
 
@@ -75,6 +76,7 @@ export interface CreateSightingRequest {
   direction?: string | null
   service?: ServiceInfoRequest | null
   notes?: string | null
+  formation?: FormationResponse | null
   vehicleNumbers: string[]
 }
 
@@ -160,7 +162,24 @@ export interface DepartureResponse {
   operator: string | null
 }
 
-export interface FormationVehicleResponse {
+export interface FormationCar {
+  position: number
+  number: string | null
+  tractive: boolean
+  travelClass: string | null
+  sectors: string | null
+  lowFloor: boolean
+  wheelchair: boolean
+  unitNumber: string | null
+}
+
+export interface FormationUnit {
   number: string
   detectedFleet: string | null
+  positionLabel: string | null
+}
+
+export interface FormationResponse {
+  cars: FormationCar[]
+  units: FormationUnit[]
 }

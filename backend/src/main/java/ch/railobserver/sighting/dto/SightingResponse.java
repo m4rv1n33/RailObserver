@@ -1,5 +1,6 @@
 package ch.railobserver.sighting.dto;
 
+import ch.railobserver.sighting.FormationSnapshot;
 import ch.railobserver.sighting.Sighting;
 import ch.railobserver.vehicle.dto.VehicleResponse;
 
@@ -15,6 +16,7 @@ public record SightingResponse(
         String direction,
         ServiceInfoResponse service,
         String notes,
+        FormationSnapshot formation,
         List<VehicleResponse> vehicles
 ) {
 
@@ -31,6 +33,7 @@ public record SightingResponse(
                 sighting.getDirection(),
                 ServiceInfoResponse.from(sighting.getService()),
                 sighting.getNotes(),
+                sighting.getFormation(),
                 vehicles
         );
     }

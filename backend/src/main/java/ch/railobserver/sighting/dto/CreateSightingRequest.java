@@ -1,5 +1,6 @@
 package ch.railobserver.sighting.dto;
 
+import ch.railobserver.sighting.FormationSnapshot;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -15,6 +16,7 @@ public record CreateSightingRequest(
         String direction,
         @Valid ServiceInfoRequest service,
         String notes,
+        FormationSnapshot formation,
         @NotEmpty List<@NotBlank String> vehicleNumbers
 ) {
 }

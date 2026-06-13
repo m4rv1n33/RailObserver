@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { createSighting, getFormation } from '../api/client'
-import type { DepartureResponse } from '../api/types'
+import type { DepartureResponse, FormationResponse } from '../api/types'
 import { useVehicleNumbers } from '../hooks/useVehicleNumbers'
 import { VehicleNumberInput } from '../components/VehicleNumberInput'
 import { Field } from '../components/Field'
@@ -23,7 +23,7 @@ export function AdvancedPage() {
   const [notes, setNotes] = useState('')
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [formationStatus, setFormationStatus] = useState<'idle' | 'detecting' | 'done' | 'empty'>('idle')
-  const [detected, setDetected] = useState<string[]>([])
+  const [formation, setFormation] = useState<FormationResponse | null>(null)
 
   async function applyDeparture(departure: DepartureResponse) {
     if (departure.line) setLine(departure.line)
@@ -32,17 +32,17 @@ export function AdvancedPage() {
     if (departure.departureTime) setDepartureTime(toDateTimeLocal(new Date(departure.departureTime)))
 
     if (!departure.trainNumber) return
-    setDetected([])
+    setFormation(null)
     setFormationStatus('detecting')
     try {
       const date = departure.departureTime ? toDateOnly(new Date(departure.departureTime)) : undefined
-      const formation = await getFormation(departure.trainNumber, date, departure.operator ?? undefined)
-      if (formation.length === 0) {
+      const result = await getFormation(departure.trainNumber, date, departure.operator ?? undefined)
+      if (result.units.length === 0 && result.cars.length === 0) {
         setFormationStatus('empty')
         return
       }
-      vehicles.set(formation.map((vehicle) => vehicle.number))
-      setDetected(formation.map((vehicle) => vehicle.detectedFleet ?? vehicle.number))
+      vehicles.set(result.units.map((unit) => unit.number))
+      setFormation(result)
       setFormationStatus('done')
     } catch {
       setFormationStatus('empty')
@@ -78,7 +78,7 @@ export function AdvancedPage() {
     setDepartureTime('')
     setNotes('')
     setFormationStatus('idle')
-    setDetected([])
+    setFormation(null)
   }
 
   async function save() {
@@ -95,6 +95,7 @@ export function AdvancedPage() {
         latitude,
         longitude,
         notes: notes.trim() || null,
+        formation,
         service: hasService
           ? {
               line: line.trim() || null,
@@ -130,8 +131,17 @@ export function AdvancedPage() {
           {formationStatus === 'detecting' && (
             <p className="mt-1 text-sm text-slate-500">Detecting formation...</p>
           )}
-          {formationStatus === 'done' && (
-            <p className="mt-1 text-sm text-emerald-600">Detected from formation: {detected.join(', ')}</p>
+          {formationStatus === 'done' && formation && (
+            <p className="mt-1 text-sm text-emerald-600">
+              Detected from formation:{' '}
+              {formation.units
+                .map((unit) =>
+                  unit.positionLabel
+                    ? `${unit.detectedFleet ?? unit.number} (${unit.positionLabel})`
+                    : (unit.detectedFleet ?? unit.number),
+                )
+                .join(', ')}
+            </p>
           )}
           {formationStatus === 'empty' && (
             <p className="mt-1 text-sm text-slate-500">No formation data for this train.</p>
