@@ -6,6 +6,7 @@ const tabs = [
   { to: '/quick', label: 'Quick', end: false },
   { to: '/sightings', label: 'Sightings', end: false },
   { to: '/fleets', label: 'Fleets', end: false },
+  { to: '/formation', label: 'Trains', end: false },
   { to: '/map', label: 'Map', end: false },
   { to: '/statistics', label: 'Stats', end: false },
 ]
@@ -20,7 +21,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <main className="flex-1 overflow-y-auto pb-16">{children}</main>
 
       <nav className="fixed inset-x-0 bottom-0 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)]">
-        <div className="grid grid-cols-6 gap-1 p-1">
+        <div className="grid grid-cols-7 gap-1 p-1">
           {tabs.map((tab) => (
             <NavLink
               key={tab.to}
