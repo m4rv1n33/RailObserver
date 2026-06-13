@@ -15,6 +15,11 @@ export function useVehicleNumbers() {
     setNumbers((prev) => prev.filter((_, i) => i !== index))
   }
 
+  function set(next: string[]) {
+    setNumbers(next)
+    setInput('')
+  }
+
   function reset() {
     setNumbers([])
     setInput('')
@@ -24,5 +29,5 @@ export function useVehicleNumbers() {
     return [...numbers, ...(input.trim() ? [input.trim()] : [])]
   }
 
-  return { numbers, input, setInput, add, remove, reset, all }
+  return { numbers, input, setInput, add, remove, set, reset, all }
 }

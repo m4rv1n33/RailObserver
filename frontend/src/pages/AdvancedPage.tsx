@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { createSighting } from '../api/client'
+import { createSighting, getFormation } from '../api/client'
 import type { DepartureResponse } from '../api/types'
 import { useVehicleNumbers } from '../hooks/useVehicleNumbers'
 import { VehicleNumberInput } from '../components/VehicleNumberInput'
@@ -7,13 +7,12 @@ import { Field } from '../components/Field'
 import { DepartureLookup } from '../components/DepartureLookup'
 import { TextInput, Textarea } from '../components/Input'
 import { Button } from '../components/Button'
-import { toDateTimeLocal } from '../lib/datetime'
+import { toDateOnly, toDateTimeLocal } from '../lib/datetime'
 
 export function AdvancedPage() {
   const vehicles = useVehicleNumbers()
   const [observedAt, setObservedAt] = useState(() => toDateTimeLocal(new Date()))
   const [station, setStation] = useState('')
-  const [direction, setDirection] = useState('')
   const [latitude, setLatitude] = useState<number | null>(null)
   const [longitude, setLongitude] = useState<number | null>(null)
   const [locationStatus, setLocationStatus] = useState<'idle' | 'locating' | 'error'>('idle')
@@ -23,12 +22,31 @@ export function AdvancedPage() {
   const [departureTime, setDepartureTime] = useState('')
   const [notes, setNotes] = useState('')
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [formationStatus, setFormationStatus] = useState<'idle' | 'detecting' | 'done' | 'empty'>('idle')
+  const [detected, setDetected] = useState<string[]>([])
 
-  function applyDeparture(departure: DepartureResponse) {
+  async function applyDeparture(departure: DepartureResponse) {
     if (departure.line) setLine(departure.line)
     if (departure.trainNumber) setTrainNumber(departure.trainNumber)
     if (departure.destination) setDestination(departure.destination)
     if (departure.departureTime) setDepartureTime(toDateTimeLocal(new Date(departure.departureTime)))
+
+    if (!departure.trainNumber) return
+    setDetected([])
+    setFormationStatus('detecting')
+    try {
+      const date = departure.departureTime ? toDateOnly(new Date(departure.departureTime)) : undefined
+      const formation = await getFormation(departure.trainNumber, date)
+      if (formation.length === 0) {
+        setFormationStatus('empty')
+        return
+      }
+      vehicles.set(formation.map((vehicle) => vehicle.number))
+      setDetected(formation.map((vehicle) => vehicle.detectedFleet ?? vehicle.number))
+      setFormationStatus('done')
+    } catch {
+      setFormationStatus('empty')
+    }
   }
 
   function captureLocation() {
@@ -51,7 +69,6 @@ export function AdvancedPage() {
     vehicles.reset()
     setObservedAt(toDateTimeLocal(new Date()))
     setStation('')
-    setDirection('')
     setLatitude(null)
     setLongitude(null)
     setLocationStatus('idle')
@@ -60,6 +77,8 @@ export function AdvancedPage() {
     setDestination('')
     setDepartureTime('')
     setNotes('')
+    setFormationStatus('idle')
+    setDetected([])
   }
 
   async function save() {
@@ -75,7 +94,6 @@ export function AdvancedPage() {
         station: station.trim() || null,
         latitude,
         longitude,
-        direction: direction.trim() || null,
         notes: notes.trim() || null,
         service: hasService
           ? {
@@ -109,6 +127,15 @@ export function AdvancedPage() {
             onAdd={vehicles.add}
             onRemove={vehicles.remove}
           />
+          {formationStatus === 'detecting' && (
+            <p className="mt-1 text-sm text-slate-500">Detecting formation...</p>
+          )}
+          {formationStatus === 'done' && (
+            <p className="mt-1 text-sm text-emerald-600">Detected from formation: {detected.join(', ')}</p>
+          )}
+          {formationStatus === 'empty' && (
+            <p className="mt-1 text-sm text-slate-500">No formation data for this train.</p>
+          )}
         </Field>
 
         <Field label="Observed at">
@@ -121,15 +148,6 @@ export function AdvancedPage() {
 
         <Field label="Station">
           <TextInput type="text" value={station} onChange={(event) => setStation(event.target.value)} />
-        </Field>
-
-        <Field label="Direction">
-          <TextInput
-            type="text"
-            value={direction}
-            onChange={(event) => setDirection(event.target.value)}
-            placeholder="e.g. towards Zurich"
-          />
         </Field>
 
         <Field label="Location">

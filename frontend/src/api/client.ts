@@ -3,6 +3,7 @@ import type {
   CreateVehicleRequest,
   DepartureResponse,
   FamilyCountResponse,
+  FormationVehicleResponse,
   FleetCountResponse,
   FleetDetailResponse,
   FleetSummaryResponse,
@@ -151,4 +152,10 @@ export function getDepartures(station: string, limit?: number): Promise<Departur
   const params = new URLSearchParams({ station })
   if (limit) params.set('limit', String(limit))
   return request(`/transport/departures?${params.toString()}`)
+}
+
+export function getFormation(trainNumber: string, date?: string): Promise<FormationVehicleResponse[]> {
+  const params = new URLSearchParams({ trainNumber })
+  if (date) params.set('date', date)
+  return request(`/transport/formation?${params.toString()}`)
 }

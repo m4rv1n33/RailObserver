@@ -158,3 +158,8 @@ export interface DepartureResponse {
   departureTime: string | null
   platform: string | null
 }
+
+export interface FormationVehicleResponse {
+  number: string
+  detectedFleet: string | null
+}
