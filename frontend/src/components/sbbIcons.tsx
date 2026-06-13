@@ -1,22 +1,24 @@
 // SBB icons (https://github.com/sbb-design-systems/sbb-icons), Apache License 2.0.
-// Inlined as path data so the diagram has no asset/runtime dependency. The
-// pictograms (wheelchair, bicycle) and the formation service-attribute icons
-// (sa-nf low-floor, sa-wr restaurant, sa-fz family zone, sa-bz business zone)
-// are recoloured via currentColor.
+// Inlined as path data so the diagram has no asset/runtime dependency. All are
+// from the cohesive "timetable / service attribute" family (sa-rs wheelchair,
+// sa-vo bicycle, sa-nf low-floor, sa-wr restaurant, sa-fz family zone, sa-bz
+// business zone) so they share size and weight; recoloured via currentColor.
 
 interface IconDef {
   viewBox: string
   path: string
+  fillRule?: 'evenodd' | 'nonzero'
 }
 
 const ICONS: Record<string, IconDef> = {
   wheelchair: {
-    viewBox: '0 0 24 24',
-    path: 'M10.5 5a1 1 0 1 0 0 2 1 1 0 0 0 0-2m-.5 8.5V8h1v5h5v6h-1v-5h-5zm-3.995 1c0-1.75 1.01-3.27 2.471-4.014l.454.891A3.51 3.51 0 0 0 7.005 14.5c0 1.922 1.578 3.5 3.5 3.5 1.39 0 2.605-.826 3.168-2.018l.904.428A4.52 4.52 0 0 1 10.505 19a4.514 4.514 0 0 1-4.5-4.5',
+    viewBox: '0 0 13 16',
+    path: 'M5.718 3.5a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5M9.334 11l.862 2.38a.94.94 0 0 0 .872.62c.645 0 1.1-.65.873-1.26l-1.289-3.58a.98.98 0 0 0-.931-.66H7.194V5.75c0-.83-.664-1.5-1.487-1.5-.822 0-1.486.67-1.486 1.5V9.5c0 .83.664 1.5 1.486 1.5zm-.743.68.614 1.7v.01c-.862.98-2.1 1.61-3.498 1.61C3.111 15 1 12.87 1 10.25c0-1.7.892-3.18 2.23-4.02V8.2a3.24 3.24 0 0 0-.744 2.05c0 1.79 1.447 3.25 3.221 3.25 1.269 0 2.359-.75 2.884-1.82',
   },
   bike: {
-    viewBox: '0 0 24 24',
-    path: 'M16.5 6H13v1h2.566l-1.334 2H8.65l-.12.329-.644 1.77A4.002 4.002 0 0 0 3 15c0 2.206 1.794 4 4 4s4-1.794 4-4a4 4 0 0 0-2.174-3.559L9.35 10h4.828l.725 1.595A4 4 0 0 0 17.002 19c2.206 0 4-1.794 4-4a4.004 4.004 0 0 0-5.188-3.82l-.743-1.634 1.846-2.77.518-.776zm-2.499 9a3 3 0 0 1 1.32-2.485l1.225 2.691.91-.413-1.224-2.693Q16.6 12 17 12c1.654 0 3 1.346 3 3s-1.346 3-3 3c-1.655 0-3-1.346-3-3m-6.46-2.951-1.01 2.78.939.341 1.01-2.778A3 3 0 0 1 10 15c0 1.654-1.346 3-3 3s-3-1.346-3-3a3.004 3.004 0 0 1 3.54-2.951M7.208 8h2.793V7H7.209z',
+    viewBox: '0 0 28 16',
+    fillRule: 'nonzero',
+    path: 'M21.75 4.5c-.79 0-1.53.19-2.2.5l-.8-1.22V2.5H21V1h-3.75v2.25h-5.76l-.39-.75h.9V1H8v1.5h1.41l.71 1.38-1.16 1.4a5.17 5.17 0 0 0-2.72-.78C3.35 4.5.99 6.85.99 9.75S3.35 15 6.24 15c2.64 0 4.81-1.96 5.17-4.5h2.97l3.59-5.16.32.49c-1.09.96-1.8 2.36-1.8 3.92 0 2.9 2.36 5.25 5.25 5.25s5.25-2.35 5.25-5.25-2.36-5.25-5.25-5.25zM12.77 9h-1.35a5.1 5.1 0 0 0-1.3-2.76l.75-.91L12.76 9zM9.16 7.41c.37.46.65.99.77 1.59H7.85zM6.25 13.5c-2.07 0-3.75-1.68-3.75-3.75S4.18 6 6.25 6c.64 0 1.22.17 1.75.45L4.66 10.5h5.27c-.35 1.71-1.86 3-3.67 3zm7.85-5.2-1.83-3.55h4.3zm7.65 5.2c-2.07 0-3.75-1.68-3.75-3.75 0-1.04.43-1.98 1.12-2.66l2.01 3.07 1.26-.82-2-3.07c.43-.17.89-.27 1.37-.27 2.07 0 3.75 1.68 3.75 3.75s-1.68 3.75-3.75 3.75z',
   },
   lowFloor: {
     viewBox: '0 0 28 16',
@@ -40,10 +42,11 @@ export type SbbIconName = keyof typeof ICONS
 
 export function SbbIcon({ name, title, className }: { name: SbbIconName; title?: string; className?: string }) {
   const icon = ICONS[name]
+  const rule = icon.fillRule ?? 'evenodd'
   return (
     <svg viewBox={icon.viewBox} fill="currentColor" className={className} role="img" aria-label={title}>
       {title && <title>{title}</title>}
-      <path fillRule="evenodd" clipRule="evenodd" d={icon.path} />
+      <path fillRule={rule} clipRule={rule} d={icon.path} />
     </svg>
   )
 }
