@@ -157,6 +157,7 @@ export interface DepartureResponse {
   destination: string | null
   departureTime: string | null
   platform: string | null
+  operator: string | null
 }
 
 export interface FormationVehicleResponse {

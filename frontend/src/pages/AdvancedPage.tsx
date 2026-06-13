@@ -36,7 +36,7 @@ export function AdvancedPage() {
     setFormationStatus('detecting')
     try {
       const date = departure.departureTime ? toDateOnly(new Date(departure.departureTime)) : undefined
-      const formation = await getFormation(departure.trainNumber, date)
+      const formation = await getFormation(departure.trainNumber, date, departure.operator ?? undefined)
       if (formation.length === 0) {
         setFormationStatus('empty')
         return

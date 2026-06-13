@@ -154,8 +154,13 @@ export function getDepartures(station: string, limit?: number): Promise<Departur
   return request(`/transport/departures?${params.toString()}`)
 }
 
-export function getFormation(trainNumber: string, date?: string): Promise<FormationVehicleResponse[]> {
+export function getFormation(
+  trainNumber: string,
+  date?: string,
+  operator?: string,
+): Promise<FormationVehicleResponse[]> {
   const params = new URLSearchParams({ trainNumber })
   if (date) params.set('date', date)
+  if (operator) params.set('operator', operator)
   return request(`/transport/formation?${params.toString()}`)
 }
