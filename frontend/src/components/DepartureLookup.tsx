@@ -154,7 +154,9 @@ export function DepartureLookup({ onSelect, initialQuery = '' }: DepartureLookup
                     className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-slate-100"
                   >
                     <span>
-                      <span className="font-medium">{departure.line ?? departure.trainNumber}</span>
+                      <span className="font-medium">
+                        {[departure.line, departure.trainNumber].filter(Boolean).join(' ')}
+                      </span>
                       {' to '}
                       {departure.destination}
                       {departure.platform ? ` (Platform ${departure.platform})` : ''}
