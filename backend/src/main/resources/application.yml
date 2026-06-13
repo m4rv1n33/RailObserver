@@ -11,3 +11,12 @@ spring:
     open-in-view: false
   flyway:
     locations: classpath:db/migration
+
+railobserver:
+  formation:
+    # opentransportdata.swiss Train Formation API. Token comes from the
+    # OTD_API_TOKEN environment variable or backend/.env (see .env.example);
+    # the feature is disabled when unset.
+    base-url: https://api.opentransportdata.swiss/formation/v1
+    token: ${OTD_API_TOKEN:}
+    default-evu: SBBP
