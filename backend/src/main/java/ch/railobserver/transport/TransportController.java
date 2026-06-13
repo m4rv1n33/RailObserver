@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -32,8 +33,9 @@ public class TransportController {
     @GetMapping("/departures")
     public List<DepartureResponse> getDepartures(
             @RequestParam String station,
-            @RequestParam(defaultValue = "10") int limit) {
-        return provider.getDepartures(station, limit);
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime when) {
+        return provider.getDepartures(station, limit, when);
     }
 
     @GetMapping("/formation")

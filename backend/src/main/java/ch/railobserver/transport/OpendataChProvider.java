@@ -10,7 +10,9 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 // transport.opendata.ch is a free public API for the Swiss public transport network, no API key required
@@ -48,14 +50,22 @@ public class OpendataChProvider implements TransportDataProvider {
         }
     }
 
+    // transport.opendata.ch expects the board time as local Swiss wall-clock time.
+    private static final DateTimeFormatter BOARD_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
     @Override
-    public List<DepartureResponse> getDepartures(String station, int limit) {
+    public List<DepartureResponse> getDepartures(String station, int limit, LocalDateTime when) {
         try {
             StationboardResponse response = restClient.get()
-                    .uri(uriBuilder -> uriBuilder.path("/stationboard")
-                            .queryParam("station", station)
-                            .queryParam("limit", limit)
-                            .build())
+                    .uri(uriBuilder -> {
+                        uriBuilder.path("/stationboard")
+                                .queryParam("station", station)
+                                .queryParam("limit", limit);
+                        if (when != null) {
+                            uriBuilder.queryParam("datetime", when.format(BOARD_TIME));
+                        }
+                        return uriBuilder.build();
+                    })
                     .retrieve()
                     .body(StationboardResponse.class);
             if (response == null || response.stationboard() == null) {

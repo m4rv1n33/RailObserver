@@ -148,9 +148,14 @@ export function getStations(query: string): Promise<StationResponse[]> {
   return request(`/transport/stations?query=${encodeURIComponent(query)}`)
 }
 
-export function getDepartures(station: string, limit?: number): Promise<DepartureResponse[]> {
+export function getDepartures(
+  station: string,
+  limit?: number,
+  when?: string,
+): Promise<DepartureResponse[]> {
   const params = new URLSearchParams({ station })
   if (limit) params.set('limit', String(limit))
+  if (when) params.set('when', when)
   return request(`/transport/departures?${params.toString()}`)
 }
 
