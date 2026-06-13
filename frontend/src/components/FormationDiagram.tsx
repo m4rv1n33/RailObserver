@@ -1,48 +1,88 @@
+import { Fragment } from 'react'
 import type { FormationCar, FormationResponse } from '../api/types'
 
-function classLabel(car: FormationCar): string | null {
+interface Amenity {
+  key: 'wheelchair' | 'lowFloor' | 'bike' | 'restaurant' | 'familyZone' | 'businessZone'
+  glyph: string
+  label: string
+}
+
+// Symbol, meaning, and the boolean flag carried by each car.
+const AMENITIES: Amenity[] = [
+  { key: 'wheelchair', glyph: '♿', label: 'Wheelchair access' },
+  { key: 'lowFloor', glyph: 'NF', label: 'Low-floor entry' },
+  { key: 'bike', glyph: '🚲', label: 'Bike spaces' },
+  { key: 'restaurant', glyph: '🍴', label: 'Restaurant / bistro' },
+  { key: 'familyZone', glyph: '🧸', label: 'Family zone' },
+  { key: 'businessZone', glyph: '💼', label: 'Business zone' },
+]
+
+function classLabel(car: FormationCar): string {
+  if (car.tractive && !car.travelClass) return 'Loco'
   switch (car.travelClass) {
     case '1':
       return '1.'
     case '2':
       return '2.'
     case '12':
-      return '1./2.'
+      return '1·2.'
     default:
-      return null
+      return ''
   }
 }
 
 function carStyle(car: FormationCar): string {
   if (car.tractive && !car.travelClass) {
-    return 'bg-slate-800 text-white border-slate-800'
+    return 'border-slate-700 bg-slate-700 text-white'
   }
   switch (car.travelClass) {
     case '1':
-      return 'bg-amber-50 border-amber-400 text-amber-900'
+      return 'border-amber-400 bg-amber-100 text-amber-900'
     case '12':
-      return 'bg-gradient-to-r from-amber-50 to-slate-50 border-slate-300 text-slate-700'
+      return 'border-amber-400 bg-gradient-to-r from-amber-100 to-slate-100 text-slate-700'
     case '2':
-      return 'bg-slate-50 border-slate-300 text-slate-700'
+      return 'border-slate-300 bg-slate-100 text-slate-700'
     default:
-      return 'bg-white border-slate-300 text-slate-700'
+      return 'border-slate-300 bg-white text-slate-600'
   }
 }
 
-function Car({ car }: { car: FormationCar }) {
-  const label = classLabel(car)
+function shortType(car: FormationCar): string {
+  return car.typeName ? car.typeName.split('-')[0] : ''
+}
+
+function Badge({ glyph, label }: { glyph: string; label: string }) {
+  const isText = /^[A-Za-z]+$/.test(glyph)
   return (
-    <div className="flex w-16 shrink-0 flex-col items-center gap-1">
-      <div className="h-4 text-xs font-medium text-slate-500">{car.sectors ?? ''}</div>
+    <span
+      title={label}
+      aria-label={label}
+      className={`inline-flex h-4 min-w-4 items-center justify-center rounded bg-white/80 px-0.5 leading-none ${
+        isText ? 'text-[8px] font-bold text-slate-600' : 'text-[10px]'
+      }`}
+    >
+      {glyph}
+    </span>
+  )
+}
+
+function Car({ car, first, last }: { car: FormationCar; first: boolean; last: boolean }) {
+  const ends = `${first ? 'rounded-l-2xl ' : ''}${last ? 'rounded-r-2xl ' : ''}`
+  return (
+    <div className="flex w-20 shrink-0 flex-col items-center gap-1">
+      <div className="flex h-5 items-center text-xs font-medium text-slate-500">
+        {car.sectors && <span className="rounded bg-slate-200 px-1 py-0.5">{car.sectors}</span>}
+      </div>
       <div
-        className={`flex h-20 w-full flex-col items-center justify-between rounded-lg border p-1 ${carStyle(car)}`}
+        className={`flex h-24 w-full flex-col items-center justify-between rounded-md border-2 p-1 ${carStyle(car)} ${ends}`}
       >
-        <div className="flex h-4 items-center gap-1 text-xs">
-          {car.wheelchair && <span aria-label="Wheelchair accessible">&#9855;</span>}
-          {car.lowFloor && <span className="font-semibold" aria-label="Low-floor entry">NF</span>}
-        </div>
-        <div className="text-sm font-semibold">{car.tractive && !label ? 'Loco' : label}</div>
-        <div className="h-4 text-[10px] leading-none opacity-70">{car.number ?? ''}</div>
+        <span className="text-base font-bold leading-none">{classLabel(car)}</span>
+        <span className="text-[10px] leading-none opacity-70">{shortType(car)}</span>
+        <span className="flex min-h-4 flex-wrap items-center justify-center gap-0.5">
+          {AMENITIES.filter((amenity) => car[amenity.key]).map((amenity) => (
+            <Badge key={amenity.key} glyph={amenity.glyph} label={amenity.label} />
+          ))}
+        </span>
       </div>
     </div>
   )
@@ -53,20 +93,36 @@ export function FormationDiagram({ formation }: { formation: FormationResponse }
     return null
   }
 
+  const present = AMENITIES.filter((amenity) => formation.cars.some((car) => car[amenity.key]))
+
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {formation.cars.length > 0 && (
         <div className="overflow-x-auto pb-1">
-          <div className="flex items-end gap-1">
-            {formation.cars.map((car) => (
-              <Car key={car.position} car={car} />
+          <div className="flex items-stretch">
+            {formation.cars.map((car, index) => (
+              <Fragment key={car.position}>
+                {index > 0 && <div className="h-1.5 w-2 self-center bg-slate-300" />}
+                <Car car={car} first={index === 0} last={index === formation.cars.length - 1} />
+              </Fragment>
             ))}
           </div>
         </div>
       )}
 
+      {present.length > 0 && (
+        <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500">
+          {present.map((amenity) => (
+            <span key={amenity.key} className="inline-flex items-center gap-1">
+              <Badge glyph={amenity.glyph} label={amenity.label} />
+              {amenity.label}
+            </span>
+          ))}
+        </div>
+      )}
+
       {formation.units.length > 0 && (
-        <ul className="space-y-0.5 text-sm">
+        <ul className="space-y-1 text-sm">
           {formation.units.map((unit) => (
             <li key={unit.number} className="flex items-baseline gap-2">
               {unit.positionLabel && (

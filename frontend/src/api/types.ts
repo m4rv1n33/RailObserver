@@ -165,11 +165,16 @@ export interface DepartureResponse {
 export interface FormationCar {
   position: number
   number: string | null
+  typeName: string | null
   tractive: boolean
   travelClass: string | null
   sectors: string | null
-  lowFloor: boolean
   wheelchair: boolean
+  lowFloor: boolean
+  bike: boolean
+  restaurant: boolean
+  familyZone: boolean
+  businessZone: boolean
   unitNumber: string | null
 }
 
