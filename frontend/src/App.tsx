@@ -13,8 +13,8 @@ function App() {
   return (
     <AppShell>
       <Routes>
-        <Route path="/" element={<QuickPage />} />
-        <Route path="/advanced" element={<AdvancedPage />} />
+        <Route path="/" element={<AdvancedPage />} />
+        <Route path="/quick" element={<QuickPage />} />
         <Route path="/sightings" element={<SightingsPage />} />
         <Route path="/statistics" element={<StatisticsPage />} />
         <Route path="/fleets" element={<FleetsPage />} />

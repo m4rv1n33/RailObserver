@@ -2,8 +2,8 @@ import type { ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
 
 const tabs = [
-  { to: '/', label: 'Quick', end: true },
-  { to: '/advanced', label: 'Advanced', end: false },
+  { to: '/', label: 'Advanced', end: true },
+  { to: '/quick', label: 'Quick', end: false },
   { to: '/sightings', label: 'Sightings', end: false },
   { to: '/fleets', label: 'Fleets', end: false },
   { to: '/map', label: 'Map', end: false },
