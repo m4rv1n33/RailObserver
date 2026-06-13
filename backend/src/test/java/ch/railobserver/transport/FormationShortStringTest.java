@@ -22,8 +22,10 @@ class FormationShortStringTest {
         assertThat(cars.get(0).codes()).containsExactly("NF");
         assertThat(cars.get(2).codes()).containsExactlyInAnyOrder("BHP", "NF");
         assertThat(cars.get(3).codes()).containsExactlyInAnyOrder("VH", "KW", "NF");
-        // The trailing group-level attribute ")#NF" is not a vehicle attribute.
-        assertThat(cars.get(5).codes()).isEmpty();
+        // The group-level ")#NF" propagates low-floor to the whole unit, so the
+        // last car is low-floor too even though it carries no per-car NF.
+        assertThat(cars.get(5).codes()).containsExactly("NF");
+        assertThat(cars).allSatisfy(car -> assertThat(car.codes()).contains("NF"));
     }
 
     @Test

@@ -13,8 +13,10 @@ import java.util.Set;
 //
 // Inside the brackets, vehicles are comma-separated in running order. A vehicle
 // is "<class>[#<attr>[;<attr>...]]" where class is 1, 2 or 12 (absent for a
-// locomotive). Grouping brackets "( )" and any group-level attribute after ")"
-// are not vehicle attributes and are stripped.
+// locomotive). Vehicles are wrapped in grouping brackets "( )"; an attribute
+// after the closing ")" applies to the whole group, so it is propagated to every
+// passenger car in that group (e.g. low-floor is marked once for the unit even
+// when an individual car carries no per-car NF).
 final class FormationShortString {
 
     // Attributes of one vehicle position: its travel class ("1"/"2"/"12" or null)
@@ -36,31 +38,64 @@ final class FormationShortString {
         }
         String body = shortString.substring(open + 1, close).replaceAll("@[A-Za-z]+", "");
 
-        List<Attrs> vehicles = new ArrayList<>();
+        List<String> classes = new ArrayList<>();
+        List<Set<String>> codes = new ArrayList<>();
+        int groupStart = -1;
         for (String raw : body.split(",")) {
-            String token = raw.trim().replaceFirst("^\\(+", "");
+            String token = raw.trim();
+            if (token.startsWith("(")) {
+                groupStart = classes.size();
+                token = token.substring(1);
+            }
             int groupEnd = token.indexOf(')');
+            String groupAttr = null;
             if (groupEnd >= 0) {
+                groupAttr = token.substring(groupEnd + 1);
                 token = token.substring(0, groupEnd);
             }
-            if (token.isEmpty()) {
-                continue;
+            if (!token.isEmpty()) {
+                String[] parts = token.split("#");
+                classes.add(switch (parts[0].trim()) {
+                    case "1", "2", "12" -> parts[0].trim();
+                    default -> null;
+                });
+                Set<String> vehicleCodes = new HashSet<>();
+                for (int i = 1; i < parts.length; i++) {
+                    addCodes(vehicleCodes, parts[i]);
+                }
+                codes.add(vehicleCodes);
             }
-            String[] parts = token.split("#");
-            String travelClass = switch (parts[0].trim()) {
-                case "1", "2", "12" -> parts[0].trim();
-                default -> null;
-            };
-            Set<String> codes = new HashSet<>();
-            for (int i = 1; i < parts.length; i++) {
-                for (String code : parts[i].split(";")) {
-                    if (!code.isBlank()) {
-                        codes.add(code.trim().toUpperCase(Locale.ROOT));
+            if (groupEnd >= 0) {
+                Set<String> groupCodes = new HashSet<>();
+                addCodes(groupCodes, groupAttr);
+                if (!groupCodes.isEmpty() && groupStart >= 0) {
+                    for (int i = groupStart; i < classes.size(); i++) {
+                        // Group attributes describe the passenger unit; do not
+                        // attach them to a locomotive / power car (no class).
+                        if (classes.get(i) != null) {
+                            codes.get(i).addAll(groupCodes);
+                        }
                     }
                 }
+                groupStart = -1;
             }
-            vehicles.add(new Attrs(travelClass, codes));
+        }
+
+        List<Attrs> vehicles = new ArrayList<>(classes.size());
+        for (int i = 0; i < classes.size(); i++) {
+            vehicles.add(new Attrs(classes.get(i), Set.copyOf(codes.get(i))));
         }
         return vehicles;
+    }
+
+    private static void addCodes(Set<String> target, String raw) {
+        if (raw == null) {
+            return;
+        }
+        for (String code : raw.split("[#;]")) {
+            if (!code.isBlank()) {
+                target.add(code.trim().toUpperCase(Locale.ROOT));
+            }
+        }
     }
 }
