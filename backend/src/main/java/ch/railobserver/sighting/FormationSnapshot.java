@@ -12,11 +12,16 @@ public record FormationSnapshot(
     public record Car(
             int position,
             String number,
+            String typeName,
             boolean tractive,
             String travelClass,
             String sectors,
-            boolean lowFloor,
             boolean wheelchair,
+            boolean lowFloor,
+            boolean bike,
+            boolean restaurant,
+            boolean familyZone,
+            boolean businessZone,
             String unitNumber
     ) {
     }

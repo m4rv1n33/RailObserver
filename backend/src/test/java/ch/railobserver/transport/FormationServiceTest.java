@@ -25,7 +25,8 @@ class FormationServiceTest {
     private final FormationService service = new FormationService(provider, recognition, "SBBP");
 
     private static FormationVehicle car(int position, String evn, String vehicleNumber) {
-        return new FormationVehicle(position, evn, vehicleNumber, null, null, null, false, false);
+        return new FormationVehicle(position, evn, vehicleNumber, null, null, null,
+                false, false, false, false, false, false);
     }
 
     @Test

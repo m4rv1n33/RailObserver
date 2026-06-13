@@ -86,6 +86,9 @@ public class OtdFormationProvider implements FormationProvider {
             return null;
         }
         VehicleProperties props = node.vehicleProperties();
+        if (props == null) {
+            props = new VehicleProperties(null, null, null, null, null, null, null, null);
+        }
         return new FormationVehicle(
                 node.position(),
                 id.evn(),
@@ -93,14 +96,15 @@ public class OtdFormationProvider implements FormationProvider {
                 id.typeCodeName(),
                 travelClass(props),
                 firstSectors(node.formationVehicleAtScheduledStops()),
-                props != null && Boolean.TRUE.equals(props.lowFloorTrolley()),
-                props != null && props.wheelchairSymbolProperties() != null);
+                Boolean.TRUE.equals(props.lowFloorTrolley()),
+                hasWheelchairAccess(props),
+                Boolean.TRUE.equals(props.bikePlatform()) || positive(props.numberBikeHooks()),
+                positive(props.numberRestaurantSpace()),
+                picto(props, PictoProperties::familyZonePicto),
+                picto(props, PictoProperties::businessZonePicto));
     }
 
     private static String travelClass(VehicleProperties props) {
-        if (props == null) {
-            return null;
-        }
         boolean first = positive(props.number1class());
         boolean second = positive(props.number2class());
         if (first && second) {
@@ -110,6 +114,22 @@ public class OtdFormationProvider implements FormationProvider {
             return "1";
         }
         return second ? "2" : null;
+    }
+
+    // A car offers wheelchair access if it has a dedicated disabled compartment,
+    // reserved wheelchair spaces, or carries the wheelchair pictogram.
+    private static boolean hasWheelchairAccess(VehicleProperties props) {
+        AccessibilityProperties access = props.accessibilityProperties();
+        if (access != null
+                && (Boolean.TRUE.equals(access.disabledCompartment()) || positive(access.numberWheelchairSpaces()))) {
+            return true;
+        }
+        return picto(props, PictoProperties::wheelchairPicto);
+    }
+
+    private static boolean picto(VehicleProperties props, java.util.function.Function<PictoProperties, Boolean> field) {
+        PictoProperties pictos = props.pictoProperties();
+        return pictos != null && Boolean.TRUE.equals(field.apply(pictos));
     }
 
     private static boolean positive(Integer value) {
@@ -154,7 +174,19 @@ public class OtdFormationProvider implements FormationProvider {
             Integer number1class,
             Integer number2class,
             Boolean lowFloorTrolley,
-            Object wheelchairSymbolProperties) {
+            Boolean bikePlatform,
+            Integer numberBikeHooks,
+            Integer numberRestaurantSpace,
+            AccessibilityProperties accessibilityProperties,
+            PictoProperties pictoProperties) {
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private record AccessibilityProperties(Boolean disabledCompartment, Integer numberWheelchairSpaces) {
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private record PictoProperties(Boolean familyZonePicto, Boolean businessZonePicto, Boolean wheelchairPicto) {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

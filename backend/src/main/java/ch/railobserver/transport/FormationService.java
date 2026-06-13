@@ -62,11 +62,16 @@ public class FormationService {
             cars.add(new FormationCarResponse(
                     vehicle.position(),
                     toRunningNumber(vehicle.vehicleNumber()),
+                    vehicle.typeCodeName(),
                     tractive,
                     vehicle.travelClass(),
                     vehicle.sectors(),
-                    vehicle.lowFloor(),
                     vehicle.wheelchair(),
+                    vehicle.lowFloor(),
+                    vehicle.bike(),
+                    vehicle.restaurant(),
+                    vehicle.familyZone(),
+                    vehicle.businessZone(),
                     unitNumber));
         }
 
