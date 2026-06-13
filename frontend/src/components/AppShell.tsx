@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react'
-import { NavLink } from 'react-router-dom'
+import { useRef, type ReactNode } from 'react'
+import { NavLink, useNavigate } from 'react-router-dom'
 
 const tabs = [
   { to: '/', label: 'Advanced', end: true },
@@ -12,10 +12,24 @@ const tabs = [
 ]
 
 export function AppShell({ children }: { children: ReactNode }) {
+  const navigate = useNavigate()
+  const taps = useRef(0)
+
+  // Easter egg: tapping the title five times opens the hidden sample formations.
+  function tapTitle() {
+    taps.current += 1
+    if (taps.current >= 5) {
+      taps.current = 0
+      navigate('/secret/formations')
+    }
+  }
+
   return (
     <div className="flex min-h-svh flex-col bg-slate-50 text-slate-900">
       <header className="border-b border-slate-200 bg-white px-4 py-3 shadow-sm">
-        <h1 className="text-lg font-semibold">RailObserver</h1>
+        <h1 className="select-none text-lg font-semibold" onClick={tapTitle}>
+          RailObserver
+        </h1>
       </header>
 
       <main className="flex-1 overflow-y-auto pb-16">{children}</main>

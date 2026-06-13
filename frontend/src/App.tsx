@@ -10,6 +10,7 @@ import { FleetDetailPage } from './pages/FleetDetailPage'
 import { VehicleDetailPage } from './pages/VehicleDetailPage'
 import { MapPage } from './pages/MapPage'
 import { FormationPage } from './pages/FormationPage'
+import { FormationSamplesPage } from './pages/FormationSamplesPage'
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         <Route path="/vehicles/:id" element={<VehicleDetailPage />} />
         <Route path="/map" element={<MapPage />} />
         <Route path="/formation" element={<FormationPage />} />
+        <Route path="/secret/formations" element={<FormationSamplesPage />} />
       </Routes>
     </AppShell>
   )
