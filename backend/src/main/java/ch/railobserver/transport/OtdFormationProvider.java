@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
@@ -70,6 +71,11 @@ public class OtdFormationProvider implements FormationProvider {
                     .filter(identifier -> identifier.evn() != null && identifier.vehicleNumber() != null)
                     .map(identifier -> new FormationVehicle(identifier.evn(), identifier.vehicleNumber()))
                     .toList();
+        } catch (HttpClientErrorException.NotFound e) {
+            // Expected when no formation is published for this journey, e.g. when SBB
+            // runs it with a non-standard set. The showcase app behaves the same way.
+            log.debug("No formation published for train '{}' on {}", number, date);
+            return List.of();
         } catch (RestClientException e) {
             log.warn("Could not load formation for train '{}' on {}: {}", number, date, e.getMessage());
             return List.of();
