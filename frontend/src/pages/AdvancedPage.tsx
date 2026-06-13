@@ -3,6 +3,7 @@ import { createSighting, getFormation } from '../api/client'
 import type { DepartureResponse, FormationResponse } from '../api/types'
 import { useVehicleNumbers } from '../hooks/useVehicleNumbers'
 import { VehicleNumberInput } from '../components/VehicleNumberInput'
+import { FormationDiagram } from '../components/FormationDiagram'
 import { Field } from '../components/Field'
 import { DepartureLookup } from '../components/DepartureLookup'
 import { TextInput, Textarea } from '../components/Input'
@@ -132,16 +133,9 @@ export function AdvancedPage() {
             <p className="mt-1 text-sm text-slate-500">Detecting formation...</p>
           )}
           {formationStatus === 'done' && formation && (
-            <p className="mt-1 text-sm text-emerald-600">
-              Detected from formation:{' '}
-              {formation.units
-                .map((unit) =>
-                  unit.positionLabel
-                    ? `${unit.detectedFleet ?? unit.number} (${unit.positionLabel})`
-                    : (unit.detectedFleet ?? unit.number),
-                )
-                .join(', ')}
-            </p>
+            <div className="mt-2">
+              <FormationDiagram formation={formation} />
+            </div>
           )}
           {formationStatus === 'empty' && (
             <p className="mt-1 text-sm text-slate-500">No formation data for this train.</p>

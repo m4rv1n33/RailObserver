@@ -3,6 +3,7 @@ import { AppShell } from './components/AppShell'
 import { QuickPage } from './pages/QuickPage'
 import { AdvancedPage } from './pages/AdvancedPage'
 import { SightingsPage } from './pages/SightingsPage'
+import { SightingDetailPage } from './pages/SightingDetailPage'
 import { StatisticsPage } from './pages/StatisticsPage'
 import { FleetsPage } from './pages/FleetsPage'
 import { FleetDetailPage } from './pages/FleetDetailPage'
@@ -16,6 +17,7 @@ function App() {
         <Route path="/" element={<AdvancedPage />} />
         <Route path="/quick" element={<QuickPage />} />
         <Route path="/sightings" element={<SightingsPage />} />
+        <Route path="/sightings/:id" element={<SightingDetailPage />} />
         <Route path="/statistics" element={<StatisticsPage />} />
         <Route path="/fleets" element={<FleetsPage />} />
         <Route path="/fleets/:id" element={<FleetDetailPage />} />

@@ -58,9 +58,10 @@ export function SightingsPage() {
               className="flex items-start justify-between gap-2 rounded-md border border-slate-200 bg-white p-3"
             >
               <div>
-                <p className="text-sm text-slate-500">
+                <Link to={`/sightings/${sighting.id}`} className="text-sm text-slate-500 hover:text-slate-700">
                   {new Date(sighting.observedAt).toLocaleString()}
-                </p>
+                  {sighting.formation && <span className="ml-1 text-slate-400">· formation</span>}
+                </Link>
                 <p className="font-medium">
                   {sighting.vehicles.map((vehicle, index) => (
                     <span key={vehicle.id}>
