@@ -5,7 +5,7 @@ import { VehicleNumberInput } from '../components/VehicleNumberInput'
 import { Button } from '../components/Button'
 
 export function QuickPage() {
-  const vehicles = useVehicleNumbers()
+  const vehicles = useVehicleNumbers('quick')
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
 
   async function save() {

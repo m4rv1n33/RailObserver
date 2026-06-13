@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { createSighting, getFormation } from '../api/client'
 import type { DepartureResponse, FormationResponse } from '../api/types'
 import { useVehicleNumbers } from '../hooks/useVehicleNumbers'
+import { usePersistentState } from '../hooks/usePersistentState'
 import { VehicleNumberInput } from '../components/VehicleNumberInput'
 import { FormationDiagram } from '../components/FormationDiagram'
 import { Field } from '../components/Field'
@@ -12,21 +13,21 @@ import { Button } from '../components/Button'
 import { toDateOnly, toDateTimeLocal } from '../lib/datetime'
 
 export function AdvancedPage() {
-  const vehicles = useVehicleNumbers()
-  const [observedAt, setObservedAt] = useState(() => toDateTimeLocal(new Date()))
-  const [station, setStation] = useState('')
-  const [lookupStation, setLookupStation] = useState('')
-  const [latitude, setLatitude] = useState<number | null>(null)
-  const [longitude, setLongitude] = useState<number | null>(null)
+  const vehicles = useVehicleNumbers('advanced')
+  const [observedAt, setObservedAt] = usePersistentState('advanced:observedAt', toDateTimeLocal(new Date()))
+  const [station, setStation] = usePersistentState('advanced:station', '')
+  const [lookupStation, setLookupStation] = usePersistentState('advanced:lookupStation', '')
+  const [latitude, setLatitude] = usePersistentState<number | null>('advanced:latitude', null)
+  const [longitude, setLongitude] = usePersistentState<number | null>('advanced:longitude', null)
   const [locationStatus, setLocationStatus] = useState<'idle' | 'locating' | 'error'>('idle')
-  const [line, setLine] = useState('')
-  const [trainNumber, setTrainNumber] = useState('')
-  const [destination, setDestination] = useState('')
-  const [departureTime, setDepartureTime] = useState('')
-  const [notes, setNotes] = useState('')
+  const [line, setLine] = usePersistentState('advanced:line', '')
+  const [trainNumber, setTrainNumber] = usePersistentState('advanced:trainNumber', '')
+  const [destination, setDestination] = usePersistentState('advanced:destination', '')
+  const [departureTime, setDepartureTime] = usePersistentState('advanced:departureTime', '')
+  const [notes, setNotes] = usePersistentState('advanced:notes', '')
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [formationStatus, setFormationStatus] = useState<'idle' | 'detecting' | 'done' | 'empty'>('idle')
-  const [formation, setFormation] = useState<FormationResponse | null>(null)
+  const [formation, setFormation] = usePersistentState<FormationResponse | null>('advanced:formation', null)
 
   async function applyDeparture(departure: DepartureResponse) {
     if (departure.line) setLine(departure.line)
@@ -135,7 +136,7 @@ export function AdvancedPage() {
           {formationStatus === 'detecting' && (
             <p className="mt-1 text-sm text-slate-500">Detecting formation...</p>
           )}
-          {formationStatus === 'done' && formation && (
+          {formation && (
             <div className="mt-2">
               <FormationDiagram formation={formation} />
             </div>
