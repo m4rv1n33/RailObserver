@@ -10,8 +10,10 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
+import java.util.Set;
 
 // opentransportdata.swiss Train Formation API. The access token is passed directly
 // as a Bearer token. When no token is configured the provider is disabled and
@@ -60,12 +62,7 @@ public class OtdFormationProvider implements FormationProvider {
             if (response == null || response.formations() == null) {
                 return List.of();
             }
-            return response.formations().stream()
-                    .filter(formation -> formation.formationVehicles() != null)
-                    .flatMap(formation -> formation.formationVehicles().stream())
-                    .map(OtdFormationProvider::toVehicle)
-                    .filter(Objects::nonNull)
-                    .toList();
+            return toVehicles(response);
         } catch (HttpClientErrorException.NotFound | HttpClientErrorException.BadRequest e) {
             // Expected: 404 when no formation is published for this journey (e.g. a
             // non-standard set), 400 when the operator is not covered by the API.
@@ -77,31 +74,65 @@ public class OtdFormationProvider implements FormationProvider {
         }
     }
 
-    // Map one API car node to our raw vehicle. Returns null when the node lacks
-    // the identifying numbers we need. Unknown/missing rich fields degrade to
-    // null/false rather than failing the whole lookup.
-    private static FormationVehicle toVehicle(Node node) {
-        VehicleIdentifier id = node.vehicleIdentifier();
-        if (id == null || id.evn() == null || id.vehicleNumber() == null) {
-            return null;
+    private static List<FormationVehicle> toVehicles(FormationFullResponse response) {
+        List<Node> nodes = response.formations().stream()
+                .filter(formation -> formation.formationVehicles() != null)
+                .flatMap(formation -> formation.formationVehicles().stream())
+                .filter(node -> node.vehicleIdentifier() != null
+                        && node.vehicleIdentifier().evn() != null
+                        && node.vehicleIdentifier().vehicleNumber() != null)
+                .sorted(Comparator.comparingInt(Node::position))
+                .toList();
+
+        // The short string carries the displayed per-wagon attributes (low-floor,
+        // bike, wheelchair, ...) that the boolean properties omit. Use it when its
+        // vehicle count lines up with the formation; otherwise fall back to the
+        // properties alone.
+        List<FormationShortString.Attrs> shortAttrs = FormationShortString.parse(firstShortString(response));
+        boolean alignsByPosition = shortAttrs.size() == nodes.size();
+
+        List<FormationVehicle> vehicles = new ArrayList<>(nodes.size());
+        for (int i = 0; i < nodes.size(); i++) {
+            FormationShortString.Attrs attrs = alignsByPosition ? shortAttrs.get(i) : null;
+            vehicles.add(toVehicle(nodes.get(i), attrs));
         }
+        return vehicles;
+    }
+
+    private static FormationVehicle toVehicle(Node node, FormationShortString.Attrs attrs) {
+        VehicleIdentifier id = node.vehicleIdentifier();
         VehicleProperties props = node.vehicleProperties();
         if (props == null) {
             props = new VehicleProperties(null, null, null, null, null, null, null, null);
         }
+        Set<String> codes = attrs != null ? attrs.codes() : Set.of();
+        String travelClass = attrs != null && attrs.travelClass() != null ? attrs.travelClass() : travelClass(props);
         return new FormationVehicle(
                 node.position(),
                 id.evn(),
                 id.vehicleNumber(),
                 id.typeCodeName(),
-                travelClass(props),
+                travelClass,
                 firstSectors(node.formationVehicleAtScheduledStops()),
-                Boolean.TRUE.equals(props.lowFloorTrolley()),
-                hasWheelchairAccess(props),
-                Boolean.TRUE.equals(props.bikePlatform()) || positive(props.numberBikeHooks()),
-                positive(props.numberRestaurantSpace()),
-                picto(props, PictoProperties::familyZonePicto),
-                picto(props, PictoProperties::businessZonePicto));
+                codes.contains("NF"),
+                codes.contains("BHP") || hasWheelchairAccess(props),
+                codes.contains("VH") || codes.contains("VR")
+                        || Boolean.TRUE.equals(props.bikePlatform()) || positive(props.numberBikeHooks()),
+                codes.contains("WR") || positive(props.numberRestaurantSpace()),
+                codes.contains("FA") || codes.contains("FZ") || picto(props, PictoProperties::familyZonePicto),
+                codes.contains("BZ") || picto(props, PictoProperties::businessZonePicto));
+    }
+
+    private static String firstShortString(FormationFullResponse response) {
+        if (response.formationsAtScheduledStops() == null) {
+            return null;
+        }
+        return response.formationsAtScheduledStops().stream()
+                .filter(stop -> stop.formationShort() != null)
+                .map(stop -> stop.formationShort().formationShortString())
+                .filter(s -> s != null && !s.isBlank())
+                .findFirst()
+                .orElse(null);
     }
 
     private static String travelClass(VehicleProperties props) {
@@ -150,11 +181,19 @@ public class OtdFormationProvider implements FormationProvider {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    private record FormationFullResponse(List<Formation> formations) {
+    private record FormationFullResponse(List<Formation> formations, List<FormationAtStop> formationsAtScheduledStops) {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     private record Formation(List<Node> formationVehicles) {
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private record FormationAtStop(FormationShort formationShort) {
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private record FormationShort(String formationShortString) {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

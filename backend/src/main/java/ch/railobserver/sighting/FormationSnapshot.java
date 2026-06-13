@@ -29,7 +29,6 @@ public record FormationSnapshot(
     public record Unit(
             String number,
             String detectedFleet,
-            boolean lowFloor,
             String positionLabel
     ) {
     }

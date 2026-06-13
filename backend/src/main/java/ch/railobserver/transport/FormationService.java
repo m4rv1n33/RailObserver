@@ -14,7 +14,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 public class FormationService {
@@ -56,12 +55,8 @@ public class FormationService {
             String unitNumber = tractive ? toTrainsetNumber(vehicle.vehicleNumber()) : null;
             if (tractive && unitNumber != null) {
                 unitsByNumber.computeIfAbsent(unitNumber, n -> {
-                    Optional<VehicleType> type = fleetRecognitionService.recognize(n);
-                    return new FormationUnitResponse(
-                            n,
-                            type.map(VehicleType::getName).orElse(null),
-                            type.map(VehicleType::isLowFloor).orElse(false),
-                            null);
+                    String fleet = fleetRecognitionService.recognize(n).map(VehicleType::getName).orElse(null);
+                    return new FormationUnitResponse(n, fleet, null);
                 });
             }
             cars.add(new FormationCarResponse(
@@ -109,7 +104,7 @@ public class FormationService {
     }
 
     private static FormationUnitResponse withLabel(FormationUnitResponse unit, String label) {
-        return new FormationUnitResponse(unit.number(), unit.detectedFleet(), unit.lowFloor(), label);
+        return new FormationUnitResponse(unit.number(), unit.detectedFleet(), label);
     }
 
     // Coaches of one unit share the trailing 6 digits of the 7-digit running number;

@@ -181,7 +181,6 @@ export interface FormationCar {
 export interface FormationUnit {
   number: string
   detectedFleet: string | null
-  lowFloor: boolean
   positionLabel: string | null
 }
 

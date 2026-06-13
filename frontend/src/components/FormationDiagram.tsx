@@ -4,23 +4,21 @@ import { SbbIcon } from './sbbIcons'
 import type { SbbIconName } from './sbbIcons'
 
 interface Amenity {
-  key: 'wheelchair' | 'bike' | 'restaurant' | 'familyZone' | 'businessZone'
+  key: 'wheelchair' | 'lowFloor' | 'bike' | 'restaurant' | 'familyZone' | 'businessZone'
   icon: SbbIconName
   label: string
 }
 
-// Per-car amenities the formation API reports, with their SBB icon. Low-floor
-// entry is not in the API (the lowFloorTrolley flag never reflects it), so it is
-// derived from the recognized fleet instead, see LOW_FLOOR below.
+// Per-car amenities, with their SBB icon. All are read from the formation API's
+// FormationShortString (NF, BHP, VH, ...) and per-vehicle properties.
 const AMENITIES: Amenity[] = [
   { key: 'wheelchair', icon: 'wheelchair', label: 'Wheelchair access' },
+  { key: 'lowFloor', icon: 'lowFloor', label: 'Low-floor entry' },
   { key: 'bike', icon: 'bike', label: 'Bike spaces' },
   { key: 'restaurant', icon: 'restaurant', label: 'Restaurant / bistro' },
   { key: 'familyZone', icon: 'familyZone', label: 'Family zone' },
   { key: 'businessZone', icon: 'businessZone', label: 'Business zone' },
 ]
-
-const LOW_FLOOR = { icon: 'lowFloor' as SbbIconName, label: 'Low-floor entry' }
 
 function classLabel(car: FormationCar): string {
   if (car.tractive && !car.travelClass) return 'Loco'
@@ -61,7 +59,7 @@ function shortType(car: FormationCar): string {
   return match ? `${match[1]}-${match[2]}` : base
 }
 
-function Car({ car, first, last, lowFloor }: { car: FormationCar; first: boolean; last: boolean; lowFloor: boolean }) {
+function Car({ car, first, last }: { car: FormationCar; first: boolean; last: boolean }) {
   const ends = `${first ? 'rounded-l-2xl ' : ''}${last ? 'rounded-r-2xl ' : ''}`
   return (
     <div className="flex w-20 shrink-0 flex-col items-center gap-1">
@@ -74,7 +72,6 @@ function Car({ car, first, last, lowFloor }: { car: FormationCar; first: boolean
         <span className="text-base font-bold leading-none">{classLabel(car)}</span>
         <span className="text-[10px] leading-none opacity-70">{shortType(car)}</span>
         <span className="flex min-h-4 flex-wrap items-center justify-center gap-1">
-          {lowFloor && <SbbIcon name={LOW_FLOOR.icon} title={LOW_FLOOR.label} className="h-4 w-auto" />}
           {AMENITIES.filter((amenity) => car[amenity.key]).map((amenity) => (
             <SbbIcon key={amenity.key} name={amenity.icon} title={amenity.label} className="h-4 w-auto" />
           ))}
@@ -89,11 +86,7 @@ export function FormationDiagram({ formation }: { formation: FormationResponse }
     return null
   }
 
-  const lowFloorUnits = new Set(formation.units.filter((unit) => unit.lowFloor).map((unit) => unit.number))
-  const legend = [
-    ...(lowFloorUnits.size > 0 ? [LOW_FLOOR] : []),
-    ...AMENITIES.filter((amenity) => formation.cars.some((car) => car[amenity.key])),
-  ]
+  const present = AMENITIES.filter((amenity) => formation.cars.some((car) => car[amenity.key]))
 
   return (
     <div className="space-y-3">
@@ -103,22 +96,17 @@ export function FormationDiagram({ formation }: { formation: FormationResponse }
             {formation.cars.map((car, index) => (
               <Fragment key={car.position}>
                 {index > 0 && <div className="h-1.5 w-2 self-center bg-slate-300" />}
-                <Car
-                  car={car}
-                  first={index === 0}
-                  last={index === formation.cars.length - 1}
-                  lowFloor={car.unitNumber !== null && lowFloorUnits.has(car.unitNumber)}
-                />
+                <Car car={car} first={index === 0} last={index === formation.cars.length - 1} />
               </Fragment>
             ))}
           </div>
         </div>
       )}
 
-      {legend.length > 0 && (
+      {present.length > 0 && (
         <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500">
-          {legend.map((amenity) => (
-            <span key={amenity.label} className="inline-flex items-center gap-1">
+          {present.map((amenity) => (
+            <span key={amenity.key} className="inline-flex items-center gap-1">
               <SbbIcon name={amenity.icon} title={amenity.label} className="h-4 w-auto text-slate-600" />
               {amenity.label}
             </span>
