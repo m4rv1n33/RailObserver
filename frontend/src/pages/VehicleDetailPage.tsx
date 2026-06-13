@@ -50,7 +50,10 @@ export function VehicleDetailPage() {
         <>
           <h2 className="mt-2 text-lg font-semibold">{vehicle.number}</h2>
           {vehicle.vehicleType && (
-            <p className="mt-1 text-sm text-slate-500">{vehicle.vehicleType.name}</p>
+            <p className="mt-1 text-sm text-slate-500">
+              {vehicle.vehicleType.name}
+              {vehicle.vehicleType.family ? ` · ${vehicle.vehicleType.family}` : ''}
+            </p>
           )}
           {(vehicle.operator || vehicle.manufacturer) && (
             <p className="mt-1 text-sm text-slate-500">
