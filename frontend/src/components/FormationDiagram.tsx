@@ -73,9 +73,9 @@ function Car({ car, roundLeft, roundRight }: { car: FormationCar; roundLeft: boo
       >
         <span className="text-base font-bold leading-none">{classLabel(car)}</span>
         <span className="text-[10px] leading-none opacity-70">{shortType(car)}</span>
-        <span className="flex min-h-4 flex-wrap items-center justify-center gap-1">
+        <span className="flex min-h-4 flex-wrap items-center justify-center gap-x-0.5 gap-y-1">
           {AMENITIES.filter((amenity) => car[amenity.key]).map((amenity) => (
-            <SbbIcon key={amenity.key} name={amenity.icon} title={amenity.label} className="h-4 w-auto" />
+            <SbbIcon key={amenity.key} name={amenity.icon} title={amenity.label} className="h-3.5 w-auto" />
           ))}
         </span>
       </div>
