@@ -107,6 +107,7 @@ public class OtdFormationProvider implements FormationProvider {
         }
         Set<String> codes = attrs != null ? attrs.codes() : Set.of();
         String travelClass = attrs != null && attrs.travelClass() != null ? attrs.travelClass() : travelClass(props);
+        Integer unitGroup = attrs != null ? attrs.group() : null;
         return new FormationVehicle(
                 node.position(),
                 id.evn(),
@@ -120,7 +121,8 @@ public class OtdFormationProvider implements FormationProvider {
                         || Boolean.TRUE.equals(props.bikePlatform()) || positive(props.numberBikeHooks()),
                 codes.contains("WR") || positive(props.numberRestaurantSpace()),
                 codes.contains("FA") || codes.contains("FZ") || picto(props, PictoProperties::familyZonePicto),
-                codes.contains("BZ") || picto(props, PictoProperties::businessZonePicto));
+                codes.contains("BZ") || picto(props, PictoProperties::businessZonePicto),
+                unitGroup);
     }
 
     private static String firstShortString(FormationFullResponse response) {

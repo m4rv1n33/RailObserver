@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -45,14 +46,28 @@ public class FormationService {
             return FormationResponse.empty();
         }
 
+        // Cars sharing a unit group (from the formation short string) form one
+        // coupled unit and must report the same number, even when their running
+        // numbers span several blocks as on the RABe 501 Giruno. The first tractive
+        // car of a group (lowest position) supplies the canonical number.
+        Map<Integer, String> unitNumberByGroup = new HashMap<>();
+        for (FormationVehicle vehicle : vehicles) {
+            if (isTractive(vehicle) && vehicle.unitGroup() != null) {
+                unitNumberByGroup.computeIfAbsent(vehicle.unitGroup(),
+                        g -> toTrainsetNumber(vehicle.vehicleNumber()));
+            }
+        }
+
         List<FormationCarResponse> cars = new ArrayList<>();
         Map<String, FormationUnitResponse> unitsByNumber = new LinkedHashMap<>();
         for (FormationVehicle vehicle : vehicles) {
             // EVNs of tractive units and railcars start with a 9 (UIC types 90-99).
             // Hauled coaches (types 5x, 2x, ...) are shown in the diagram but not
             // tracked as recordable fleets.
-            boolean tractive = vehicle.evn() != null && vehicle.evn().startsWith("9");
-            String unitNumber = tractive ? toTrainsetNumber(vehicle.vehicleNumber()) : null;
+            boolean tractive = isTractive(vehicle);
+            String unitNumber = !tractive ? null
+                    : vehicle.unitGroup() != null ? unitNumberByGroup.get(vehicle.unitGroup())
+                    : toTrainsetNumber(vehicle.vehicleNumber());
             if (tractive && unitNumber != null) {
                 unitsByNumber.computeIfAbsent(unitNumber, n -> {
                     String fleet = fleetRecognitionService.recognize(n).map(VehicleType::getName).orElse(null);
@@ -77,6 +92,11 @@ public class FormationService {
 
         cars.sort((a, b) -> Integer.compare(a.position(), b.position()));
         return new FormationResponse(List.copyOf(cars), labelPositions(unitsByNumber.values()));
+    }
+
+    // EVNs of tractive units and railcars start with a 9 (UIC types 90-99).
+    private static boolean isTractive(FormationVehicle vehicle) {
+        return vehicle.evn() != null && vehicle.evn().startsWith("9");
     }
 
     // opendata.ch operator strings ("SBB", "THURBO", "BLS-bls", "SOB-sob") map to

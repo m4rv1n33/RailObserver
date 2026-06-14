@@ -6,7 +6,9 @@ package ch.railobserver.transport;
 // (e.g. "6511037"). position orders the cars along the train (1-based).
 // typeCodeName is the car type (e.g. "AB511"); travelClass is "1", "2", "12"
 // or null; sectors is the platform sector span such as "A,B". The booleans flag
-// per-car amenities the formation API publishes.
+// per-car amenities the formation API publishes. unitGroup identifies the coupled
+// unit a car belongs to (from the formation short string); it is null when no
+// grouping is available, in which case the running number determines the unit.
 public record FormationVehicle(
         int position,
         String evn,
@@ -19,6 +21,7 @@ public record FormationVehicle(
         boolean bike,
         boolean restaurant,
         boolean familyZone,
-        boolean businessZone
+        boolean businessZone,
+        Integer unitGroup
 ) {
 }

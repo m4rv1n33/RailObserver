@@ -25,8 +25,12 @@ class FormationServiceTest {
     private final FormationService service = new FormationService(provider, recognition, "SBBP");
 
     private static FormationVehicle car(int position, String evn, String vehicleNumber) {
+        return car(position, evn, vehicleNumber, null);
+    }
+
+    private static FormationVehicle car(int position, String evn, String vehicleNumber, Integer unitGroup) {
         return new FormationVehicle(position, evn, vehicleNumber, null, null, null,
-                false, false, false, false, false, false);
+                false, false, false, false, false, false, unitGroup);
     }
 
     @Test
@@ -54,6 +58,42 @@ class FormationServiceTest {
         assertThat(result.cars()).hasSize(4);
         assertThat(result.cars().get(3).tractive()).isFalse();
         assertThat(result.cars().get(3).unitNumber()).isNull();
+    }
+
+    @Test
+    void detect_groupsGirunoHalvesIntoOneUnitPerSet() {
+        // A RABe 501 Giruno is one 11-car unit whose running numbers span two
+        // blocks: cars 1-5 are "501 0xx", cars 6-11 are "501 2xx". The short
+        // string groups all 11 into one unit, so a double Giruno is two units,
+        // not four. Cars share a unit group; the lowest block names the unit.
+        List<FormationVehicle> vehicles = new java.util.ArrayList<>();
+        int position = 1;
+        for (int car = 1; car <= 5; car++) {
+            vehicles.add(car(position++, "93 85 " + car + " 501 025-0", car + "501025", 0));
+        }
+        for (int car = 6; car >= 1; car--) {
+            vehicles.add(car(position++, "93 85 " + car + " 501 225-0", car + "501225", 0));
+        }
+        for (int car = 1; car <= 5; car++) {
+            vehicles.add(car(position++, "93 85 " + car + " 501 019-0", car + "501019", 1));
+        }
+        for (int car = 6; car >= 1; car--) {
+            vehicles.add(car(position++, "93 85 " + car + " 501 219-0", car + "501219", 1));
+        }
+        when(provider.getFormation(any(), any(), any())).thenReturn(vehicles);
+        when(recognition.recognize(any())).thenReturn(Optional.empty());
+
+        FormationResponse result = service.detect("25", LocalDate.of(2026, 6, 14), "SBB");
+
+        assertThat(result.units()).extracting(FormationUnitResponse::number)
+                .containsExactly("501-025", "501-019");
+        // Every car of the first set reports the same unit number, so the diagram
+        // draws no break inside a Giruno.
+        assertThat(result.cars()).hasSize(22);
+        assertThat(result.cars().subList(0, 11)).extracting(c -> c.unitNumber())
+                .containsOnly("501-025");
+        assertThat(result.cars().subList(11, 22)).extracting(c -> c.unitNumber())
+                .containsOnly("501-019");
     }
 
     @Test

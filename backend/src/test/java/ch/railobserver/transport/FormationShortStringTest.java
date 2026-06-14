@@ -40,6 +40,31 @@ class FormationShortStringTest {
     }
 
     @Test
+    void groupsCarsWithinTheSameParentheses() {
+        // One parenthesised unit: all six cars share a group index.
+        List<Attrs> cars = FormationShortString.parse(
+                "@A,F,[(2#NF,12#NF,2#BHP;NF,2#VH;KW;NF,12#NF,2)#NF]");
+
+        assertThat(cars).extracting(Attrs::group).containsOnly(cars.get(0).group());
+    }
+
+    @Test
+    void assignsSeparateGroupsToCoupledUnits() {
+        // Two coupled RABe 501 Giruno units, in the positional "class:seq" notation
+        // the API uses for them. Each parenthesised block is its own unit; the
+        // eleven cars of a set all share one group index.
+        List<Attrs> cars = FormationShortString.parse(
+                "@D,F,[(2:1,2:2,2:3,2:4,2:5,2:6,WR:7,1:8,1:9,1:10,1):11@B,"
+                        + "(2:21,2:22,2:23,2:24,2:25,2:26,WR:27,1:28,1:29,1:30,1):31]");
+
+        assertThat(cars).hasSize(22);
+        List<Integer> groups = cars.stream().map(Attrs::group).distinct().toList();
+        assertThat(groups).hasSize(2);
+        assertThat(cars.subList(0, 11)).extracting(Attrs::group).containsOnly(groups.get(0));
+        assertThat(cars.subList(11, 22)).extracting(Attrs::group).containsOnly(groups.get(1));
+    }
+
+    @Test
     void returnsEmptyWhenNoTrainBody() {
         assertThat(FormationShortString.parse(null)).isEmpty();
         assertThat(FormationShortString.parse("@A,F,F,F")).isEmpty();
