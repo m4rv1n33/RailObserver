@@ -1,7 +1,68 @@
 @import "tailwindcss";
 
+/* Dark mode is driven by a `.dark` class on <html> (toggled in the header and
+   pre-applied by an inline script in index.html), not by prefers-color-scheme. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Semantic color tokens. Components reference these (bg-surface, text-dim, ...)
+   instead of raw slate/indigo shades, so a single set of overrides flips the
+   whole UI between light and dark. */
+@theme {
+  --color-canvas: #f1f5f9;
+  --color-surface: #ffffff;
+  --color-subtle: #f1f5f9;
+  --color-subtle2: #e2e8f0;
+  --color-line: #e2e8f0;
+
+  --color-fg: #0f172a;
+  --color-dim: #64748b;
+  --color-faint: #94a3b8;
+
+  --color-accent: #4f46e5;
+  --color-accent-hover: #4338ca;
+  --color-accent-fg: #ffffff;
+  --color-accent-soft: #eef2ff;
+
+  --color-danger: #dc2626;
+  --color-danger-soft: #fef2f2;
+  --color-success: #059669;
+
+  --color-first: #b45309;
+  --color-first-bg: #fef3c7;
+  --color-first-border: #fbbf24;
+}
+
+.dark {
+  --color-canvas: #0b1120;
+  --color-surface: #131c2e;
+  --color-subtle: #1e293b;
+  --color-subtle2: #334155;
+  --color-line: #2a3850;
+
+  --color-fg: #e9eef5;
+  --color-dim: #97a4ba;
+  --color-faint: #6b7a93;
+
+  --color-accent: #6366f1;
+  --color-accent-hover: #818cf8;
+  --color-accent-fg: #ffffff;
+  --color-accent-soft: #1e2547;
+
+  --color-danger: #f87171;
+  --color-danger-soft: #2a1416;
+  --color-success: #34d399;
+
+  --color-first: #fcd34d;
+  --color-first-bg: #3a2a08;
+  --color-first-border: #a16207;
+}
+
 html {
-  color-scheme: light dark;
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
 }
 
 body {
