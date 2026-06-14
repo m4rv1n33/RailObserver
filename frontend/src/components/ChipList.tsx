@@ -13,7 +13,7 @@ interface ChipListProps {
 
 export function ChipList({ items, emptyText }: ChipListProps) {
   if (items.length === 0) {
-    return <p className="text-sm text-slate-500">{emptyText}</p>
+    return <p className="text-sm text-dim">{emptyText}</p>
   }
 
   return (
@@ -23,12 +23,12 @@ export function ChipList({ items, emptyText }: ChipListProps) {
           <Link
             key={item.key}
             to={item.to}
-            className="rounded bg-slate-900 px-2 py-1 text-xs font-medium text-white"
+            className="rounded-md bg-accent px-2 py-1 text-xs font-medium text-accent-fg transition-colors hover:bg-accent-hover"
           >
             {item.label}
           </Link>
         ) : (
-          <span key={item.key} className="rounded bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">
+          <span key={item.key} className="rounded-md bg-subtle px-2 py-1 text-xs font-medium text-dim">
             {item.label}
           </span>
         ),

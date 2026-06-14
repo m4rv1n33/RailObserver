@@ -3,10 +3,10 @@ import type { ButtonHTMLAttributes } from 'react'
 type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost'
 
 const variantClass: Record<ButtonVariant, string> = {
-  primary: 'bg-slate-900 text-white hover:bg-slate-800 active:bg-slate-950',
-  secondary: 'border border-slate-300 text-slate-600 hover:bg-slate-50',
-  danger: 'text-red-600 hover:bg-red-50',
-  ghost: 'text-slate-500 hover:text-slate-700',
+  primary: 'bg-accent text-accent-fg shadow-sm hover:bg-accent-hover',
+  secondary: 'border border-line text-dim hover:bg-subtle hover:text-fg',
+  danger: 'text-danger hover:bg-danger-soft',
+  ghost: 'text-dim hover:text-fg',
 }
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {

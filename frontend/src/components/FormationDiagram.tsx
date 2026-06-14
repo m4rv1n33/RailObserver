@@ -36,17 +36,17 @@ function classLabel(car: FormationCar): string {
 
 function carStyle(car: FormationCar): string {
   if (car.tractive && !car.travelClass) {
-    return 'border-slate-700 bg-slate-700 text-white'
+    return 'border-slate-700 bg-slate-700 text-white dark:border-slate-500 dark:bg-slate-600'
   }
   switch (car.travelClass) {
     case '1':
-      return 'border-amber-400 bg-amber-100 text-amber-900'
+      return 'border-first-border bg-first-bg text-first'
     case '12':
-      return 'border-amber-400 bg-gradient-to-r from-amber-100 to-slate-100 text-slate-700'
+      return 'border-first-border bg-gradient-to-r from-first-bg to-subtle text-fg'
     case '2':
-      return 'border-slate-300 bg-slate-100 text-slate-700'
+      return 'border-line bg-subtle text-fg'
     default:
-      return 'border-slate-300 bg-white text-slate-600'
+      return 'border-line bg-surface text-dim'
   }
 }
 
@@ -65,8 +65,8 @@ function Car({ car, roundLeft, roundRight }: { car: FormationCar; roundLeft: boo
   const ends = `${roundLeft ? 'rounded-l-2xl ' : ''}${roundRight ? 'rounded-r-2xl ' : ''}`
   return (
     <div className="flex w-20 shrink-0 flex-col items-center gap-1">
-      <div className="flex h-5 items-center text-xs font-medium text-slate-500">
-        {car.sectors && <span className="rounded bg-slate-200 px-1 py-0.5">{car.sectors}</span>}
+      <div className="flex h-5 items-center text-xs font-medium text-dim">
+        {car.sectors && <span className="rounded bg-subtle2 px-1 py-0.5">{car.sectors}</span>}
       </div>
       <div
         className={`flex h-24 w-full flex-col items-center justify-between rounded-md border-2 p-1 ${carStyle(car)} ${ends}`}
@@ -97,7 +97,7 @@ function isUnitBreak(left: FormationCar, right: FormationCar): boolean {
 function NoPassage() {
   return (
     <span className="flex w-4" title="No passage between units">
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-4 w-4 text-slate-400">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-4 w-4 text-faint">
         <circle cx="8" cy="8" r="6" />
         <line x1="3.8" y1="3.8" x2="12.2" y2="12.2" />
       </svg>
@@ -121,7 +121,7 @@ function Connector({ children }: { children: ReactNode }) {
 // the train moves toward the front of the diagram (left).
 function DirectionOfTravel() {
   return (
-    <div className="flex items-center gap-1 text-xs font-medium text-slate-500">
+    <div className="flex items-center gap-1 text-xs font-medium text-dim">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.75} className="h-3.5 w-3.5">
         <line x1="14" y1="8" x2="3" y2="8" />
         <polyline points="7,4 3,8 7,12" />
@@ -157,7 +157,7 @@ export function FormationDiagram({ formation }: { formation: FormationResponse }
                       </Connector>
                     ) : (
                       <Connector>
-                        <div className="h-1.5 w-2 bg-slate-300" />
+                        <div className="h-1.5 w-2 bg-subtle2" />
                       </Connector>
                     ))}
                   <Car
@@ -176,7 +176,7 @@ export function FormationDiagram({ formation }: { formation: FormationResponse }
       )}
 
       {(present.length > 0 || hasUnitBreak) && (
-        <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500">
+        <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-dim">
           {hasUnitBreak && (
             <span className="inline-flex items-center gap-1">
               <NoPassage />
@@ -185,7 +185,7 @@ export function FormationDiagram({ formation }: { formation: FormationResponse }
           )}
           {present.map((amenity) => (
             <span key={amenity.key} className="inline-flex items-center gap-1">
-              <SbbIcon name={amenity.icon} title={amenity.label} className="h-4 w-auto text-slate-600" />
+              <SbbIcon name={amenity.icon} title={amenity.label} className="h-4 w-auto text-dim" />
               {amenity.label}
             </span>
           ))}
@@ -197,12 +197,12 @@ export function FormationDiagram({ formation }: { formation: FormationResponse }
           {formation.units.map((unit) => (
             <li key={unit.number} className="flex items-baseline gap-2">
               {unit.positionLabel && (
-                <span className="rounded bg-slate-200 px-1.5 py-0.5 text-xs font-medium uppercase text-slate-600">
+                <span className="rounded bg-subtle2 px-1.5 py-0.5 text-xs font-medium uppercase text-dim">
                   {unit.positionLabel}
                 </span>
               )}
               <span className="font-medium">{unit.detectedFleet ?? 'Unknown fleet'}</span>
-              <span className="text-slate-500">{unit.number}</span>
+              <span className="text-dim">{unit.number}</span>
             </li>
           ))}
         </ul>

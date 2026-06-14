@@ -67,14 +67,14 @@ export function StationAutocomplete({ value, onChange, onSelect, placeholder }: 
         placeholder={placeholder ?? 'Search station...'}
       />
       {open && suggestions.length > 0 && (
-        <ul className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-slate-200 bg-white shadow-md">
+        <ul className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-line bg-surface shadow-lg">
           {suggestions.map((station) => (
             <li key={station.id}>
               <button
                 type="button"
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => select(station)}
-                className="block w-full px-3 py-2 text-left text-sm hover:bg-slate-100"
+                className="block w-full px-3 py-2 text-left text-sm text-fg hover:bg-subtle"
               >
                 {station.name}
               </button>
