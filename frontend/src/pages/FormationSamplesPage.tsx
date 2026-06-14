@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import type { FormationCar, FormationResponse } from '../api/types'
 import { FormationDiagram } from '../components/FormationDiagram'
+import { COLOR_STYLES, useColorStyle } from '../hooks/useColorStyle'
 
 // Hidden page with hand-built formations for exercising the diagram without live
 // API data, in particular multi-unit (double traction) trains. Reach it via the
@@ -71,6 +72,33 @@ const SAMPLES: { title: string; description: string; formation: FormationRespons
   },
 ]
 
+function ColorStylePicker() {
+  const { style, setStyle } = useColorStyle()
+
+  return (
+    <div className="grid grid-cols-2 gap-2">
+      {COLOR_STYLES.map((option) => (
+        <button
+          key={option.id}
+          type="button"
+          onClick={() => setStyle(option.id)}
+          className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+            style === option.id
+              ? 'border-accent bg-accent-soft text-accent'
+              : 'border-line text-dim hover:bg-subtle hover:text-fg'
+          }`}
+        >
+          <span
+            className="h-4 w-4 shrink-0 rounded-full ring-1 ring-black/10"
+            style={{ backgroundColor: option.swatch }}
+          />
+          {option.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 export function FormationSamplesPage() {
   return (
     <div className="p-4">
@@ -78,10 +106,21 @@ export function FormationSamplesPage() {
         &larr; Back
       </Link>
 
-      <h2 className="mt-2 text-base font-semibold">Formation samples</h2>
-      <p className="mt-1 text-sm text-dim">Hidden test data. Not real sightings.</p>
+      <h2 className="mt-2 text-base font-semibold">Secret menu</h2>
+      <p className="mt-1 text-sm text-dim">Hidden settings and test data.</p>
 
-      <div className="mt-4 space-y-6">
+      <section className="mt-4">
+        <h3 className="text-sm font-semibold text-fg">Color style</h3>
+        <p className="mb-2 text-xs text-dim">
+          Pick an accent palette. Works in both light and dark mode (toggle in the header).
+        </p>
+        <ColorStylePicker />
+      </section>
+
+      <h3 className="mt-6 text-sm font-semibold text-fg">Formation samples</h3>
+      <p className="text-xs text-dim">Hidden test data. Not real sightings.</p>
+
+      <div className="mt-3 space-y-6">
         {SAMPLES.map((sample) => (
           <section key={sample.title}>
             <h3 className="text-sm font-semibold">{sample.title}</h3>

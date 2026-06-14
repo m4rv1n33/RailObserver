@@ -57,6 +57,49 @@
   --color-first-border: #a16207;
 }
 
+/* Color styles (palettes) chosen in the secret menu via a data-theme attribute
+   on <html>. They only re-map the accent, so they layer on top of light/dark.
+   Placed after .dark: a plain [data-theme] wins the light accent, and a
+   .dark[data-theme] (higher specificity) supplies the matching dark accent. */
+[data-theme="sbb"] {
+  --color-accent: #eb0000;
+  --color-accent-hover: #c50016;
+  --color-accent-fg: #ffffff;
+  --color-accent-soft: #fde7e7;
+}
+.dark[data-theme="sbb"] {
+  --color-accent: #ef3340;
+  --color-accent-hover: #f4636d;
+  --color-accent-fg: #ffffff;
+  --color-accent-soft: #3a1416;
+}
+
+[data-theme="emerald"] {
+  --color-accent: #059669;
+  --color-accent-hover: #047857;
+  --color-accent-fg: #ffffff;
+  --color-accent-soft: #d1fae5;
+}
+.dark[data-theme="emerald"] {
+  --color-accent: #34d399;
+  --color-accent-hover: #6ee7b7;
+  --color-accent-fg: #052e23;
+  --color-accent-soft: #07291f;
+}
+
+[data-theme="sky"] {
+  --color-accent: #0284c7;
+  --color-accent-hover: #0369a1;
+  --color-accent-fg: #ffffff;
+  --color-accent-soft: #e0f2fe;
+}
+.dark[data-theme="sky"] {
+  --color-accent: #38bdf8;
+  --color-accent-hover: #7dd3fc;
+  --color-accent-fg: #07263a;
+  --color-accent-soft: #082f49;
+}
+
 html {
   color-scheme: light;
 }

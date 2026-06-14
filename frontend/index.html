@@ -16,6 +16,8 @@
             stored === 'dark' ||
             (stored !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches)
           document.documentElement.classList.toggle('dark', dark)
+          var style = localStorage.getItem('colorStyle')
+          if (style && style !== 'default') document.documentElement.setAttribute('data-theme', style)
         } catch (e) {
           /* ignore */
         }
