@@ -1,8 +1,8 @@
-import { usePersistentState } from './usePersistentState'
+import { useState } from 'react'
 
-export function useVehicleNumbers(storageKey: string) {
-  const [numbers, setNumbers] = usePersistentState<string[]>(`${storageKey}:numbers`, [])
-  const [input, setInput] = usePersistentState<string>(`${storageKey}:input`, '')
+export function useVehicleNumbers() {
+  const [numbers, setNumbers] = useState<string[]>([])
+  const [input, setInput] = useState<string>('')
 
   function add() {
     const trimmed = input.trim()
