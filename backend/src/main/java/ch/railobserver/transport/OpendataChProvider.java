@@ -40,8 +40,12 @@ public class OpendataChProvider implements TransportDataProvider {
             if (response == null || response.stations() == null) {
                 return List.of();
             }
+            // opendata.ch returns every public-transport stop; the "icon" field marks
+            // the stop's mode (train, tram, bus, ...). We only record rail vehicles,
+            // so keep train stations and drop tram/bus stops and address results.
             return response.stations().stream()
-                    .filter(station -> station.id() != null && station.name() != null)
+                    .filter(station -> station.id() != null && station.name() != null
+                            && "train".equals(station.icon()))
                     .map(station -> new StationResponse(station.id(), station.name()))
                     .toList();
         } catch (RestClientException e) {
@@ -115,7 +119,7 @@ public class OpendataChProvider implements TransportDataProvider {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    private record Station(String id, String name) {
+    private record Station(String id, String name, String icon) {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
