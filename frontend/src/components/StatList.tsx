@@ -17,13 +17,13 @@ export function StatList({ title, items }: { title: string; items: StatItem[] })
           {items.map((item) => (
             <li key={item.label} className="flex items-center gap-2 text-sm">
               <span className="w-32 shrink-0 truncate">{item.label}</span>
-              <div className="h-2 flex-1 rounded-full bg-subtle">
+              <div className="h-1.5 flex-1 bg-subtle">
                 <div
-                  className="h-2 rounded-full bg-accent"
+                  className="h-1.5 bg-accent"
                   style={{ width: `${(item.count / max) * 100}%` }}
                 />
               </div>
-              <span className="w-8 shrink-0 text-right text-dim">{item.count}</span>
+              <span className="w-8 shrink-0 text-right font-num text-dim">{item.count}</span>
             </li>
           ))}
         </ul>

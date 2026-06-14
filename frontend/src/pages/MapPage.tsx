@@ -143,7 +143,7 @@ export function MapPage() {
 
   return (
     <div className="p-4">
-      <h2 className="text-base font-semibold">Map</h2>
+      <h2 className="text-xl font-semibold tracking-tight">Map</h2>
       <p className="mt-1 text-sm text-dim">Where you have seen vehicles.</p>
 
       <div className="mt-4 grid grid-cols-2 gap-3">

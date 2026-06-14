@@ -37,7 +37,7 @@ export function SightingsPage() {
 
   return (
     <div className="p-4">
-      <h2 className="text-base font-semibold">Sightings</h2>
+      <h2 className="text-xl font-semibold tracking-tight">Sightings</h2>
       <p className="mt-1 text-sm text-dim">Your recent sightings.</p>
 
       {error && <p className="mt-4 text-sm text-danger">Could not load sightings.</p>}
@@ -55,14 +55,14 @@ export function SightingsPage() {
           {sightings.map((sighting) => (
             <li
               key={sighting.id}
-              className="flex items-start justify-between gap-2 rounded-md border border-line bg-surface p-3"
+              className="flex items-start justify-between gap-2 rounded border-l-2 border-l-accent border border-line bg-surface p-3"
             >
               <div>
-                <Link to={`/sightings/${sighting.id}`} className="text-sm text-dim hover:text-fg">
+                <Link to={`/sightings/${sighting.id}`} className="font-num text-xs text-dim hover:text-fg">
                   {new Date(sighting.observedAt).toLocaleString()}
-                  {sighting.formation && <span className="ml-1 text-faint">· formation</span>}
+                  {sighting.formation && <span className="ml-1 font-sans text-faint">· formation</span>}
                 </Link>
-                <p className="font-medium">
+                <p className="mt-0.5 font-num font-medium">
                   {sighting.vehicles.map((vehicle, index) => (
                     <span key={vehicle.id}>
                       {index > 0 && ', '}

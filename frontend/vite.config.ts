@@ -14,8 +14,8 @@ export default defineConfig({
         name: 'RailObserver',
         short_name: 'RailObserver',
         description: 'Personal Swiss rail vehicle observation platform',
-        theme_color: '#334155',
-        background_color: '#334155',
+        theme_color: '#ffffff',
+        background_color: '#ffffff',
         display: 'standalone',
         icons: [
           {

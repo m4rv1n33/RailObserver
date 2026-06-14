@@ -120,7 +120,7 @@ export function AdvancedPage() {
 
   return (
     <div className="p-4">
-      <h2 className="text-base font-semibold">Advanced</h2>
+      <h2 className="text-xl font-semibold tracking-tight">Advanced</h2>
       <p className="mt-1 text-sm text-dim">Log a sighting with full details.</p>
 
       <div className="mt-4 space-y-4">

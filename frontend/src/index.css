@@ -5,99 +5,72 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* Semantic color tokens. Components reference these (bg-surface, text-dim, ...)
-   instead of raw slate/indigo shades, so a single set of overrides flips the
-   whole UI between light and dark. */
+   instead of raw shades, so a single set of overrides flips the whole UI
+   between light and dark.
+
+   Palette: the official SBB design system base colors
+   (https://digital.sbb.ch/de/foundation/colors/base-colors/). Neutral (non-blue)
+   greys built from Milk/Cloud/Silver/Metal/Charcoal, with SBB Red as the accent
+   and SBB Green for success. The face is the Swiss-grotesque Helvetica/Arial
+   stack SBB uses. Vehicle numbers stay tabular monospace (`font-num`) so they
+   read like a rolling-stock register. */
 @theme {
-  --color-canvas: #f1f5f9;
-  --color-surface: #ffffff;
-  --color-subtle: #f1f5f9;
-  --color-subtle2: #e2e8f0;
-  --color-line: #e2e8f0;
+  --font-sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-num: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo,
+    Consolas, monospace;
 
-  --color-fg: #0f172a;
-  --color-dim: #64748b;
-  --color-faint: #94a3b8;
-
-  --color-accent: #4f46e5;
-  --color-accent-hover: #4338ca;
-  --color-accent-fg: #ffffff;
-  --color-accent-soft: #eef2ff;
-
-  --color-danger: #dc2626;
-  --color-danger-soft: #fef2f2;
-  --color-success: #059669;
-
-  --color-first: #b45309;
-  --color-first-bg: #fef3c7;
-  --color-first-border: #fbbf24;
-}
-
-.dark {
-  --color-canvas: #0b1120;
-  --color-surface: #131c2e;
-  --color-subtle: #1e293b;
-  --color-subtle2: #334155;
-  --color-line: #2a3850;
-
-  --color-fg: #e9eef5;
-  --color-dim: #97a4ba;
-  --color-faint: #6b7a93;
-
-  --color-accent: #6366f1;
-  --color-accent-hover: #818cf8;
-  --color-accent-fg: #ffffff;
-  --color-accent-soft: #1e2547;
-
-  --color-danger: #f87171;
-  --color-danger-soft: #2a1416;
-  --color-success: #34d399;
-
-  --color-first: #fcd34d;
-  --color-first-bg: #3a2a08;
-  --color-first-border: #a16207;
-}
-
-/* Secret "SBB style": a full theme, not just an accent. Selected in the secret
-   menu via a data-theme attribute on <html>. It re-maps the whole palette to
-   SBB's red plus neutral (non-blue) greys, and switches to a Helvetica-style
-   face. Placed after .dark so the .dark[data-theme="sbb"] block (higher
-   specificity) supplies the dark variant. */
-[data-theme="sbb"] {
+  /* greys: Milk / Cloud / Silver / Aluminum, text Charcoal / Metal / Smoke */
   --color-canvas: #f6f6f6;
   --color-surface: #ffffff;
-  --color-subtle: #ededed;
+  --color-subtle: #e5e5e5;
   --color-subtle2: #dcdcdc;
-  --color-line: #d7d7d7;
+  --color-line: #dcdcdc;
 
-  --color-fg: #1a1a1a;
-  --color-dim: #595959;
-  --color-faint: #8a8a8a;
+  --color-fg: #212121;
+  --color-dim: #767676;
+  --color-faint: #8d8d8d;
 
+  /* SBB Red / Red125, on White */
   --color-accent: #eb0000;
   --color-accent-hover: #c60018;
   --color-accent-fg: #ffffff;
   --color-accent-soft: #fde7e7;
+
+  --color-danger: #eb0000;
+  --color-danger-soft: #fde7e7;
+  --color-success: #00973b;
+
+  --color-first: #8a6300;
+  --color-first-bg: #f4e9c8;
+  --color-first-border: #d3b24a;
 }
 
-.dark[data-theme="sbb"] {
-  --color-canvas: #0d0d0d;
-  --color-surface: #1b1b1b;
-  --color-subtle: #262626;
-  --color-subtle2: #383838;
-  --color-line: #3a3a3a;
+/* Dark theme derived from the SBB greys: Midnight / Charcoal / Iron / Anthracite,
+   text Milk / Storm / Metal. SBB has no official dark mode, so this keeps the
+   neutral greys and the red accent, lightened where needed for contrast. */
+.dark {
+  --color-canvas: #151515;
+  --color-surface: #212121;
+  --color-subtle: #444444;
+  --color-subtle2: #5a5a5a;
+  --color-line: #444444;
 
-  --color-fg: #f2f2f2;
-  --color-dim: #b0b0b0;
-  --color-faint: #7a7a7a;
+  --color-fg: #f6f6f6;
+  --color-dim: #a8a8a8;
+  --color-faint: #767676;
 
   --color-accent: #ff3b3b;
   --color-accent-hover: #ff5c5c;
   --color-accent-fg: #ffffff;
   --color-accent-soft: #3a1414;
-}
 
-[data-theme="sbb"] body {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --color-danger: #ff3b3b;
+  --color-danger-soft: #3a1414;
+  --color-success: #16c060;
+
+  --color-first: #e6c252;
+  --color-first-bg: #382d0c;
+  --color-first-border: #836619;
 }
 
 html {
@@ -110,4 +83,15 @@ html.dark {
 
 body {
   margin: 0;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Vehicle numbers and other figures: tabular monospace so digits line up like
+   a departure board / rolling-stock register. */
+.font-num {
+  font-family: var(--font-num);
+  font-feature-settings: "tnum" 1;
+  letter-spacing: -0.01em;
 }

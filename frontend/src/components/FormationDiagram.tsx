@@ -36,7 +36,7 @@ function classLabel(car: FormationCar): string {
 
 function carStyle(car: FormationCar): string {
   if (car.tractive && !car.travelClass) {
-    return 'border-slate-700 bg-slate-700 text-white dark:border-slate-500 dark:bg-slate-600'
+    return 'border-fg bg-fg text-surface'
   }
   switch (car.travelClass) {
     case '1':
@@ -72,7 +72,7 @@ function Car({ car, roundLeft, roundRight }: { car: FormationCar; roundLeft: boo
         className={`flex h-24 w-full flex-col items-center justify-between rounded-md border-2 p-1 ${carStyle(car)} ${ends}`}
       >
         <span className="text-base font-bold leading-none">{classLabel(car)}</span>
-        <span className="text-[10px] leading-none opacity-70">{shortType(car)}</span>
+        <span className="font-num text-[10px] leading-none opacity-70">{shortType(car)}</span>
         {/* Point amenities stay on top; low-floor (NF) always gets its own bottom
             row so the layout is stable instead of wrapping in icon order. */}
         <span className="flex min-h-4 flex-col items-center gap-0.5">
@@ -202,7 +202,7 @@ export function FormationDiagram({ formation }: { formation: FormationResponse }
                 </span>
               )}
               <span className="font-medium">{unit.detectedFleet ?? 'Unknown fleet'}</span>
-              <span className="text-dim">{unit.number}</span>
+              <span className="font-num text-dim">{unit.number}</span>
             </li>
           ))}
         </ul>

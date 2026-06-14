@@ -25,7 +25,7 @@ export function QuickPage() {
 
   return (
     <div className="p-4">
-      <h2 className="text-base font-semibold">Quick</h2>
+      <h2 className="text-xl font-semibold tracking-tight">Quick</h2>
       <p className="mt-1 text-sm text-dim">
         Enter a vehicle number and save. Add more for a composition.
       </p>

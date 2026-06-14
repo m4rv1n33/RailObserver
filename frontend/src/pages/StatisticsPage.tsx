@@ -68,7 +68,7 @@ export function StatisticsPage() {
 
   return (
     <div className="p-4">
-      <h2 className="text-base font-semibold">Statistics</h2>
+      <h2 className="text-xl font-semibold tracking-tight">Statistics</h2>
       <p className="mt-1 text-sm text-dim">Overview of your sightings.</p>
 
       {error && <p className="mt-4 text-sm text-danger">Could not load statistics.</p>}

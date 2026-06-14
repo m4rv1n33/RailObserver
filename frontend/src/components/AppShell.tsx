@@ -27,20 +27,18 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-svh flex-col bg-canvas text-fg">
-      <header className="flex items-center justify-between border-b border-line bg-surface px-4 py-3 shadow-sm">
+      <header className="flex items-center justify-between border-b border-line bg-surface px-4 py-3">
         <h1
-          className="flex select-none items-center gap-2 text-lg font-semibold tracking-tight"
+          className="flex select-none items-center gap-2.5 text-lg font-semibold tracking-tight"
           onClick={tapTitle}
         >
-          <span className="grid h-7 w-7 place-items-center rounded-lg bg-accent text-accent-fg shadow-sm">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-4 w-4">
-              <rect x="5" y="3" width="14" height="13" rx="3" />
-              <path strokeLinecap="round" d="M5 10h14M9 16l-2 4m8-4 2 4M9.5 7h5" />
-              <circle cx="9" cy="13" r="0.6" fill="currentColor" />
-              <circle cx="15" cy="13" r="0.6" fill="currentColor" />
-            </svg>
+          <span className="grid h-7 w-7 place-items-center border border-accent bg-accent font-num text-[0.7rem] font-bold leading-none text-accent-fg">
+            RO
           </span>
-          Rail<span className="text-accent">Observer</span>
+          <span>
+            RailObserver
+            <span className="ml-1 align-middle text-accent">·</span>
+          </span>
         </h1>
         <ThemeToggle />
       </header>
@@ -48,17 +46,17 @@ export function AppShell({ children }: { children: ReactNode }) {
       <main className="flex-1 overflow-y-auto pb-16">{children}</main>
 
       <nav className="fixed inset-x-0 bottom-0 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)]">
-        <div className="grid grid-cols-7 gap-1 p-1">
+        <div className="grid grid-cols-7">
           {tabs.map((tab) => (
             <NavLink
               key={tab.to}
               to={tab.to}
               end={tab.end}
               className={({ isActive }) =>
-                `rounded-md py-2 text-center text-sm font-medium transition-colors ${
+                `border-t-2 py-2.5 text-center text-[0.8rem] font-medium tracking-tight transition-colors ${
                   isActive
-                    ? 'bg-accent-soft text-accent'
-                    : 'text-faint hover:text-fg'
+                    ? 'border-accent text-accent'
+                    : 'border-transparent text-faint hover:text-fg'
                 }`
               }
             >
