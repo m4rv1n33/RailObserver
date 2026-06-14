@@ -144,7 +144,7 @@ export function MapPage() {
   return (
     <div className="p-4">
       <h2 className="text-base font-semibold">Map</h2>
-      <p className="mt-1 text-sm text-slate-500">Where you have seen vehicles.</p>
+      <p className="mt-1 text-sm text-dim">Where you have seen vehicles.</p>
 
       <div className="mt-4 grid grid-cols-2 gap-3">
         <Field label="Fleet">
@@ -195,9 +195,9 @@ export function MapPage() {
         </Button>
       </div>
 
-      {error && <p className="mt-4 text-sm text-red-600">Could not load sighting locations.</p>}
+      {error && <p className="mt-4 text-sm text-danger">Could not load sighting locations.</p>}
 
-      <div className="mt-4 h-[60vh] overflow-hidden rounded-md border border-slate-200">
+      <div className="mt-4 h-[60vh] overflow-hidden rounded-md border border-line">
         <MapContainer center={SWITZERLAND_CENTER} zoom={DEFAULT_ZOOM} className="h-full w-full">
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -210,7 +210,7 @@ export function MapPage() {
       </div>
 
       {locations !== null && locations.length === 0 && (
-        <p className="mt-2 text-sm text-slate-500">No located sightings match these filters.</p>
+        <p className="mt-2 text-sm text-dim">No located sightings match these filters.</p>
       )}
     </div>
   )

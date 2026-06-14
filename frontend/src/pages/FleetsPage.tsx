@@ -16,14 +16,14 @@ export function FleetsPage() {
   return (
     <div className="p-4">
       <h2 className="text-base font-semibold">Fleets</h2>
-      <p className="mt-1 text-sm text-slate-500">Seen vehicles per fleet.</p>
+      <p className="mt-1 text-sm text-dim">Seen vehicles per fleet.</p>
 
-      {error && <p className="mt-4 text-sm text-red-600">Could not load fleets.</p>}
+      {error && <p className="mt-4 text-sm text-danger">Could not load fleets.</p>}
 
-      {fleets === null && !error && <p className="mt-4 text-sm text-slate-500">Loading...</p>}
+      {fleets === null && !error && <p className="mt-4 text-sm text-dim">Loading...</p>}
 
       {fleets !== null && fleets.length === 0 && (
-        <p className="mt-4 text-sm text-slate-500">No fleets yet.</p>
+        <p className="mt-4 text-sm text-dim">No fleets yet.</p>
       )}
 
       {fleets !== null && fleets.length > 0 && (
@@ -34,19 +34,19 @@ export function FleetsPage() {
               <li key={fleet.id}>
                 <Link
                   to={`/fleets/${fleet.id}`}
-                  className="block rounded-md border border-slate-200 bg-white p-3 hover:border-slate-300"
+                  className="block rounded-xl border border-line bg-surface p-3 shadow-sm transition-colors hover:border-accent"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-medium">{fleet.name}</span>
-                    <span className="text-sm text-slate-500">
+                    <span className="text-sm text-dim">
                       {fleet.seenCount}
                       {fleet.fleetSize !== null ? ` / ${fleet.fleetSize}` : ''}
                     </span>
                   </div>
                   {fleet.fleetSize !== null && (
-                    <div className="mt-2 h-2 rounded bg-slate-100">
+                    <div className="mt-2 h-2 rounded bg-subtle">
                       <div
-                        className="h-2 rounded bg-slate-900"
+                        className="h-2 rounded bg-accent"
                         style={{ width: `${Math.min(ratio, 1) * 100}%` }}
                       />
                     </div>

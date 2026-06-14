@@ -69,11 +69,11 @@ export function StatisticsPage() {
   return (
     <div className="p-4">
       <h2 className="text-base font-semibold">Statistics</h2>
-      <p className="mt-1 text-sm text-slate-500">Overview of your sightings.</p>
+      <p className="mt-1 text-sm text-dim">Overview of your sightings.</p>
 
-      {error && <p className="mt-4 text-sm text-red-600">Could not load statistics.</p>}
+      {error && <p className="mt-4 text-sm text-danger">Could not load statistics.</p>}
 
-      {stats === null && !error && <p className="mt-4 text-sm text-slate-500">Loading...</p>}
+      {stats === null && !error && <p className="mt-4 text-sm text-dim">Loading...</p>}
 
       {stats && (
         <>

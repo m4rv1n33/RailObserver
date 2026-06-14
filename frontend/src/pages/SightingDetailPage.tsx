@@ -27,13 +27,13 @@ export function SightingDetailPage() {
 
   return (
     <div className="p-4">
-      <Link to="/sightings" className="text-sm text-slate-500 hover:text-slate-700">
+      <Link to="/sightings" className="text-sm text-dim hover:text-fg">
         &larr; Back
       </Link>
 
-      {error && <p className="mt-4 text-sm text-red-600">Could not load sighting.</p>}
+      {error && <p className="mt-4 text-sm text-danger">Could not load sighting.</p>}
 
-      {sighting === null && !error && <p className="mt-4 text-sm text-slate-500">Loading...</p>}
+      {sighting === null && !error && <p className="mt-4 text-sm text-dim">Loading...</p>}
 
       {sighting && (
         <>
@@ -41,12 +41,12 @@ export function SightingDetailPage() {
             {new Date(sighting.observedAt).toLocaleString()}
           </h2>
           {(sighting.station || sighting.direction) && (
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-dim">
               {[sighting.station, sighting.direction].filter(Boolean).join(' · ')}
             </p>
           )}
           {sighting.service && (
-            <p className="mt-1 text-sm text-slate-500">{formatService(sighting.service)}</p>
+            <p className="mt-1 text-sm text-dim">{formatService(sighting.service)}</p>
           )}
 
           <Section title="Vehicles">

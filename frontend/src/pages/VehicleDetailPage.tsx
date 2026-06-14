@@ -38,40 +38,40 @@ export function VehicleDetailPage() {
 
   return (
     <div className="p-4">
-      <Link to="/sightings" className="text-sm text-slate-500 hover:text-slate-700">
+      <Link to="/sightings" className="text-sm text-dim hover:text-fg">
         &larr; Back
       </Link>
 
-      {error && <p className="mt-4 text-sm text-red-600">Could not load vehicle.</p>}
+      {error && <p className="mt-4 text-sm text-danger">Could not load vehicle.</p>}
 
-      {vehicle === null && !error && <p className="mt-4 text-sm text-slate-500">Loading...</p>}
+      {vehicle === null && !error && <p className="mt-4 text-sm text-dim">Loading...</p>}
 
       {vehicle && (
         <>
           <h2 className="mt-2 text-lg font-semibold">{vehicle.number}</h2>
           {vehicle.vehicleType && (
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-dim">
               {vehicle.vehicleType.name}
               {vehicle.vehicleType.family ? ` · ${vehicle.vehicleType.family}` : ''}
             </p>
           )}
           {(vehicle.operator || vehicle.manufacturer) && (
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-dim">
               {[vehicle.operator, vehicle.manufacturer].filter(Boolean).join(' · ')}
             </p>
           )}
 
           <Section title="Observation history">
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-dim">
               {vehicle.sightingCount} sighting{vehicle.sightingCount === 1 ? '' : 's'}
             </p>
             {vehicle.firstSeen && (
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-dim">
                 First seen: {new Date(vehicle.firstSeen).toLocaleString()}
               </p>
             )}
             {vehicle.lastSeen && (
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-dim">
                 Last seen: {new Date(vehicle.lastSeen).toLocaleString()}
               </p>
             )}
@@ -107,10 +107,10 @@ export function VehicleDetailPage() {
               {saveStatus === 'saving' ? 'Saving...' : 'Save notes'}
             </Button>
             {saveStatus === 'saved' && (
-              <p className="mt-2 text-sm text-emerald-600">Notes saved.</p>
+              <p className="mt-2 text-sm text-success">Notes saved.</p>
             )}
             {saveStatus === 'error' && (
-              <p className="mt-2 text-sm text-red-600">Could not save notes. Try again.</p>
+              <p className="mt-2 text-sm text-danger">Could not save notes. Try again.</p>
             )}
           </Section>
         </>

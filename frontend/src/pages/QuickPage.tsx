@@ -26,7 +26,7 @@ export function QuickPage() {
   return (
     <div className="p-4">
       <h2 className="text-base font-semibold">Quick</h2>
-      <p className="mt-1 text-sm text-slate-500">
+      <p className="mt-1 text-sm text-dim">
         Enter a vehicle number and save. Add more for a composition.
       </p>
 
@@ -50,9 +50,9 @@ export function QuickPage() {
         {status === 'saving' ? 'Saving...' : 'Save sighting'}
       </Button>
 
-      {status === 'saved' && <p className="mt-3 text-sm text-emerald-600">Sighting saved.</p>}
+      {status === 'saved' && <p className="mt-3 text-sm text-success">Sighting saved.</p>}
       {status === 'error' && (
-        <p className="mt-3 text-sm text-red-600">Could not save sighting. Try again.</p>
+        <p className="mt-3 text-sm text-danger">Could not save sighting. Try again.</p>
       )}
     </div>
   )

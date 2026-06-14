@@ -74,18 +74,18 @@ const SAMPLES: { title: string; description: string; formation: FormationRespons
 export function FormationSamplesPage() {
   return (
     <div className="p-4">
-      <Link to="/" className="text-sm text-slate-500 hover:text-slate-700">
+      <Link to="/" className="text-sm text-dim hover:text-fg">
         &larr; Back
       </Link>
 
       <h2 className="mt-2 text-base font-semibold">Formation samples</h2>
-      <p className="mt-1 text-sm text-slate-500">Hidden test data. Not real sightings.</p>
+      <p className="mt-1 text-sm text-dim">Hidden test data. Not real sightings.</p>
 
       <div className="mt-4 space-y-6">
         {SAMPLES.map((sample) => (
           <section key={sample.title}>
             <h3 className="text-sm font-semibold">{sample.title}</h3>
-            <p className="mb-2 text-xs text-slate-500">{sample.description}</p>
+            <p className="mb-2 text-xs text-dim">{sample.description}</p>
             <FormationDiagram formation={sample.formation} />
           </section>
         ))}

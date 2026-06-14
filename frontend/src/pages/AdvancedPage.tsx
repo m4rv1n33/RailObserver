@@ -121,7 +121,7 @@ export function AdvancedPage() {
   return (
     <div className="p-4">
       <h2 className="text-base font-semibold">Advanced</h2>
-      <p className="mt-1 text-sm text-slate-500">Log a sighting with full details.</p>
+      <p className="mt-1 text-sm text-dim">Log a sighting with full details.</p>
 
       <div className="mt-4 space-y-4">
         <Field label="Vehicles">
@@ -133,7 +133,7 @@ export function AdvancedPage() {
             onRemove={vehicles.remove}
           />
           {formationStatus === 'detecting' && (
-            <p className="mt-1 text-sm text-slate-500">Detecting formation...</p>
+            <p className="mt-1 text-sm text-dim">Detecting formation...</p>
           )}
           {formation && (
             <div className="mt-2">
@@ -141,7 +141,7 @@ export function AdvancedPage() {
             </div>
           )}
           {formationStatus === 'empty' && (
-            <p className="mt-1 text-sm text-slate-500">No formation data for this train.</p>
+            <p className="mt-1 text-sm text-dim">No formation data for this train.</p>
           )}
         </Field>
 
@@ -170,20 +170,20 @@ export function AdvancedPage() {
               {locationStatus === 'locating' ? 'Locating...' : 'Use current location'}
             </Button>
             {latitude !== null && longitude !== null && (
-              <span className="text-sm text-slate-500">
+              <span className="text-sm text-dim">
                 {latitude.toFixed(5)}, {longitude.toFixed(5)}
               </span>
             )}
           </div>
           {locationStatus === 'error' && (
-            <p className="mt-1 text-sm text-red-600">Could not determine location.</p>
+            <p className="mt-1 text-sm text-danger">Could not determine location.</p>
           )}
         </Field>
 
-        <fieldset className="space-y-4 rounded-md border border-slate-200 p-3">
-          <legend className="px-1 text-sm font-medium text-slate-700">Service</legend>
+        <fieldset className="space-y-4 rounded-md border border-line p-3">
+          <legend className="px-1 text-sm font-medium text-fg">Service</legend>
 
-          <p className="text-xs text-slate-500">Departures for the station and observed time above.</p>
+          <p className="text-xs text-dim">Departures for the station and observed time above.</p>
           <DepartureLookup station={lookupStation} when={observedAt} onSelect={applyDeparture} />
 
           <Field label="Line">
@@ -212,9 +212,9 @@ export function AdvancedPage() {
         {status === 'saving' ? 'Saving...' : 'Save sighting'}
       </Button>
 
-      {status === 'saved' && <p className="mt-3 text-sm text-emerald-600">Sighting saved.</p>}
+      {status === 'saved' && <p className="mt-3 text-sm text-success">Sighting saved.</p>}
       {status === 'error' && (
-        <p className="mt-3 text-sm text-red-600">Could not save sighting. Try again.</p>
+        <p className="mt-3 text-sm text-danger">Could not save sighting. Try again.</p>
       )}
     </div>
   )

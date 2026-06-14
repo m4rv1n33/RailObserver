@@ -19,27 +19,27 @@ export function FleetDetailPage() {
 
   return (
     <div className="p-4">
-      <Link to="/fleets" className="text-sm text-slate-500 hover:text-slate-700">
+      <Link to="/fleets" className="text-sm text-dim hover:text-fg">
         &larr; Back to fleets
       </Link>
 
-      {error && <p className="mt-4 text-sm text-red-600">Could not load fleet.</p>}
+      {error && <p className="mt-4 text-sm text-danger">Could not load fleet.</p>}
 
-      {fleet === null && !error && <p className="mt-4 text-sm text-slate-500">Loading...</p>}
+      {fleet === null && !error && <p className="mt-4 text-sm text-dim">Loading...</p>}
 
       {fleet && (
         <>
           <h2 className="mt-2 text-lg font-semibold">{fleet.name}</h2>
-          {fleet.family && <p className="mt-1 text-sm text-slate-500">{fleet.family}</p>}
-          <p className="mt-1 text-sm text-slate-500">
+          {fleet.family && <p className="mt-1 text-sm text-dim">{fleet.family}</p>}
+          <p className="mt-1 text-sm text-dim">
             Seen {fleet.seenCount}
             {fleet.fleetSize !== null ? ` / ${fleet.fleetSize}` : ''}
             {fleet.fleetSize !== null ? ` (${fleet.missingCount} missing)` : ''}
           </p>
           {fleet.fleetSize !== null && (
-            <div className="mt-2 h-2 rounded bg-slate-100">
+            <div className="mt-2 h-2 rounded bg-subtle">
               <div
-                className="h-2 rounded bg-slate-900"
+                className="h-2 rounded bg-accent"
                 style={{ width: `${Math.min(fleet.seenCount / fleet.fleetSize, 1) * 100}%` }}
               />
             </div>

@@ -47,7 +47,7 @@ export function FormationPage() {
   return (
     <div className="p-4">
       <h2 className="text-base font-semibold">Formation</h2>
-      <p className="mt-1 text-sm text-slate-500">Look up the carriage formation of a train.</p>
+      <p className="mt-1 text-sm text-dim">Look up the carriage formation of a train.</p>
 
       <div className="mt-4 space-y-4">
         <Field label="Find by station (optional)">
@@ -91,10 +91,10 @@ export function FormationPage() {
         </Button>
 
         {status === 'empty' && (
-          <p className="text-sm text-slate-500">No formation data for this train.</p>
+          <p className="text-sm text-dim">No formation data for this train.</p>
         )}
         {status === 'error' && (
-          <p className="text-sm text-red-600">Could not load formation. Try again.</p>
+          <p className="text-sm text-danger">Could not load formation. Try again.</p>
         )}
         {status === 'done' && formation && <FormationDiagram formation={formation} />}
       </div>
