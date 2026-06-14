@@ -35,7 +35,8 @@ class FormationShortStringTest {
 
         assertThat(cars).hasSize(4);
         assertThat(cars).extracting(Attrs::travelClass).containsExactly("2", null, "2", "12");
-        assertThat(cars.get(1).codes()).isEmpty();
+        // The power car carries its "D" class-slot marker as a code, no amenities.
+        assertThat(cars.get(1).codes()).containsExactly("D");
         assertThat(cars.get(2).codes()).containsExactlyInAnyOrder("VH", "NF");
     }
 
@@ -62,6 +63,22 @@ class FormationShortStringTest {
         assertThat(groups).hasSize(2);
         assertThat(cars.subList(0, 11)).extracting(Attrs::group).containsOnly(groups.get(0));
         assertThat(cars.subList(11, 22)).extracting(Attrs::group).containsOnly(groups.get(1));
+    }
+
+    @Test
+    void capturesFamilyCoachMarkerFromClassSlot() {
+        // RABe 502 (single unit): the family coach is marked "FA" in the class
+        // slot, with its own attributes after the closing bracket (":8#KW;NF").
+        // The marker must surface as a code so the family amenity is detected.
+        List<Attrs> cars = FormationShortString.parse(
+                "@A,F,[(1:1#VR;BZ;NF,1:2#VR;KW;NF,1:3#VR;NF,W2:4#BHP;NF,"
+                        + "2:5#BHP;NF,2:6#VR;KW;NF,2:7#VR;KW;NF,FA):8#KW;NF],F,F");
+
+        assertThat(cars).hasSize(8);
+        Attrs family = cars.get(7);
+        assertThat(family.codes()).contains("FA", "NF");
+        // Its attributes stay on the car, not propagated to the rest of the unit.
+        assertThat(cars.get(0).codes()).doesNotContain("FA");
     }
 
     @Test

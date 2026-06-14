@@ -58,19 +58,37 @@ final class FormationShortString {
                 currentGroup = nextGroup++;
                 token = token.substring(1);
             }
+            // ")" closes the group. A genuine group attribute starts with "#"
+            // right after it ("2)#NF"); otherwise what follows is the last car's
+            // own sequence and attributes ("FA):8#KW;NF"), which stay on the car.
             int groupEnd = token.indexOf(')');
             String groupAttr = null;
             if (groupEnd >= 0) {
-                groupAttr = token.substring(groupEnd + 1);
-                token = token.substring(0, groupEnd);
+                String after = token.substring(groupEnd + 1);
+                if (after.startsWith("#")) {
+                    groupAttr = after;
+                    after = "";
+                }
+                token = token.substring(0, groupEnd) + after;
             }
+            // Drop the per-car sequence marker the API appends to the class (":8").
+            token = token.replaceAll(":\\d+", "");
             if (!token.isEmpty()) {
                 String[] parts = token.split("#");
-                classes.add(switch (parts[0].trim()) {
-                    case "1", "2", "12" -> parts[0].trim();
+                String marker = parts[0].trim();
+                String travelClass = marker.replaceAll("\\D", "");
+                classes.add(switch (travelClass) {
+                    case "1", "2", "12" -> travelClass;
                     default -> null;
                 });
                 Set<String> vehicleCodes = new HashSet<>();
+                // A non-class marker in the class slot is an amenity the class
+                // digits do not carry, e.g. "FA" for a family coach (which the
+                // boolean pictogram properties leave unset).
+                String markerCode = marker.replaceAll("[^A-Za-z]", "");
+                if (!markerCode.isEmpty()) {
+                    vehicleCodes.add(markerCode.toUpperCase(Locale.ROOT));
+                }
                 for (int i = 1; i < parts.length; i++) {
                     addCodes(vehicleCodes, parts[i]);
                 }
