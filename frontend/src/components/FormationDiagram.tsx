@@ -59,8 +59,10 @@ function shortType(car: FormationCar): string {
   return match ? `${match[1]}-${match[2]}` : base
 }
 
-function Car({ car, first, last }: { car: FormationCar; first: boolean; last: boolean }) {
-  const ends = `${first ? 'rounded-l-2xl ' : ''}${last ? 'rounded-r-2xl ' : ''}`
+// roundLeft / roundRight mark the leading and trailing car of a coupled unit, so
+// each unit in a multi-traction train gets its own rounded nose and tail.
+function Car({ car, roundLeft, roundRight }: { car: FormationCar; roundLeft: boolean; roundRight: boolean }) {
+  const ends = `${roundLeft ? 'rounded-l-2xl ' : ''}${roundRight ? 'rounded-r-2xl ' : ''}`
   return (
     <div className="flex w-20 shrink-0 flex-col items-center gap-1">
       <div className="flex h-5 items-center text-xs font-medium text-slate-500">
@@ -153,7 +155,14 @@ export function FormationDiagram({ formation }: { formation: FormationResponse }
                         <div className="h-1.5 w-2 bg-slate-300" />
                       </Connector>
                     ))}
-                  <Car car={car} first={index === 0} last={index === formation.cars.length - 1} />
+                  <Car
+                    car={car}
+                    roundLeft={index === 0 || isUnitBreak(formation.cars[index - 1], car)}
+                    roundRight={
+                      index === formation.cars.length - 1 ||
+                      isUnitBreak(car, formation.cars[index + 1])
+                    }
+                  />
                 </Fragment>
               ))}
             </div>
