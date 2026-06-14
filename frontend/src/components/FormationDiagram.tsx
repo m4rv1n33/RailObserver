@@ -73,10 +73,15 @@ function Car({ car, roundLeft, roundRight }: { car: FormationCar; roundLeft: boo
       >
         <span className="text-base font-bold leading-none">{classLabel(car)}</span>
         <span className="text-[10px] leading-none opacity-70">{shortType(car)}</span>
-        <span className="flex min-h-4 flex-wrap items-center justify-center gap-x-0.5 gap-y-1">
-          {AMENITIES.filter((amenity) => car[amenity.key]).map((amenity) => (
-            <SbbIcon key={amenity.key} name={amenity.icon} title={amenity.label} className="h-3.5 w-auto" />
-          ))}
+        {/* Point amenities stay on top; low-floor (NF) always gets its own bottom
+            row so the layout is stable instead of wrapping in icon order. */}
+        <span className="flex min-h-4 flex-col items-center gap-0.5">
+          <span className="flex items-center justify-center gap-0.5">
+            {AMENITIES.filter((amenity) => amenity.key !== 'lowFloor' && car[amenity.key]).map((amenity) => (
+              <SbbIcon key={amenity.key} name={amenity.icon} title={amenity.label} className="h-3.5 w-auto" />
+            ))}
+          </span>
+          {car.lowFloor && <SbbIcon name="lowFloor" title="Low-floor entry" className="h-3.5 w-auto" />}
         </span>
       </div>
     </div>
