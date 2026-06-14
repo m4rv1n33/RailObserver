@@ -14,12 +14,16 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Set;
 
 // transport.opendata.ch is a free public API for the Swiss public transport network, no API key required
 @Component
 public class OpendataChProvider implements TransportDataProvider {
 
     private static final Logger log = LoggerFactory.getLogger(OpendataChProvider.class);
+
+    // opendata.ch "icon" values for non-rail stops we exclude from station search.
+    private static final Set<String> NON_RAIL_ICONS = Set.of("bus", "tram", "cableway", "ship");
 
     private final RestClient restClient;
 
@@ -41,11 +45,13 @@ public class OpendataChProvider implements TransportDataProvider {
                 return List.of();
             }
             // opendata.ch returns every public-transport stop; the "icon" field marks
-            // the stop's mode (train, tram, bus, ...). We only record rail vehicles,
-            // so keep train stations and drop tram/bus stops and address results.
+            // the stop's mode (train, tram, bus, cableway, ...). We only record rail
+            // vehicles, so drop the non-rail modes. The icon is often null for genuine
+            // train stations (e.g. Fischenthal), so we exclude by mode rather than
+            // require "train"; address results carry no id and are dropped too.
             return response.stations().stream()
                     .filter(station -> station.id() != null && station.name() != null
-                            && "train".equals(station.icon()))
+                            && (station.icon() == null || !NON_RAIL_ICONS.contains(station.icon())))
                     .map(station -> new StationResponse(station.id(), station.name()))
                     .toList();
         } catch (RestClientException e) {
