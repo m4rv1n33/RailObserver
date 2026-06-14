@@ -1,4 +1,4 @@
-import { Fragment } from 'react'
+import { Fragment, type ReactNode } from 'react'
 import type { FormationCar, FormationResponse } from '../api/types'
 import { SbbIcon } from './sbbIcons'
 import type { SbbIconName } from './sbbIcons'
@@ -81,30 +81,94 @@ function Car({ car, first, last }: { car: FormationCar; first: boolean; last: bo
   )
 }
 
+// Two adjacent cars belong to different coupled units (no walk-through between
+// them) when their recordable unit numbers differ.
+function isUnitBreak(left: FormationCar, right: FormationCar): boolean {
+  return left.unitNumber !== right.unitNumber
+}
+
+function NoPassage() {
+  return (
+    <span className="flex w-4" title="No passage between units">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-4 w-4 text-slate-400">
+        <circle cx="8" cy="8" r="6" />
+        <line x1="3.8" y1="3.8" x2="12.2" y2="12.2" />
+      </svg>
+    </span>
+  )
+}
+
+// A gap between two cars. The sector-label header (h-5 + gap) sits above the
+// car body, so a connector must reserve that same space to line up with the
+// vertical center of the body rather than the whole column.
+function Connector({ children }: { children: ReactNode }) {
+  return (
+    <div className="flex shrink-0 flex-col items-center gap-1">
+      <div className="h-5" />
+      <div className="flex h-24 items-center">{children}</div>
+    </div>
+  )
+}
+
+// Cars are listed in running order with the leading car (position 1) first, so
+// the train moves toward the front of the diagram (left).
+function DirectionOfTravel() {
+  return (
+    <div className="flex items-center gap-1 text-xs font-medium text-slate-500">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.75} className="h-3.5 w-3.5">
+        <line x1="14" y1="8" x2="3" y2="8" />
+        <polyline points="7,4 3,8 7,12" />
+      </svg>
+      <span>Direction of travel</span>
+    </div>
+  )
+}
+
 export function FormationDiagram({ formation }: { formation: FormationResponse }) {
   if (formation.cars.length === 0 && formation.units.length === 0) {
     return null
   }
 
   const present = AMENITIES.filter((amenity) => formation.cars.some((car) => car[amenity.key]))
+  const hasUnitBreak = formation.cars.some(
+    (car, index) => index > 0 && isUnitBreak(formation.cars[index - 1], car),
+  )
 
   return (
     <div className="space-y-3">
       {formation.cars.length > 0 && (
-        <div className="overflow-x-auto pb-1">
-          <div className="flex items-stretch">
-            {formation.cars.map((car, index) => (
-              <Fragment key={car.position}>
-                {index > 0 && <div className="h-1.5 w-2 self-center bg-slate-300" />}
-                <Car car={car} first={index === 0} last={index === formation.cars.length - 1} />
-              </Fragment>
-            ))}
+        <div className="space-y-1">
+          <DirectionOfTravel />
+          <div className="overflow-x-auto pb-1">
+            <div className="flex items-stretch">
+              {formation.cars.map((car, index) => (
+                <Fragment key={car.position}>
+                  {index > 0 &&
+                    (isUnitBreak(formation.cars[index - 1], car) ? (
+                      <Connector>
+                        <NoPassage />
+                      </Connector>
+                    ) : (
+                      <Connector>
+                        <div className="h-1.5 w-2 bg-slate-300" />
+                      </Connector>
+                    ))}
+                  <Car car={car} first={index === 0} last={index === formation.cars.length - 1} />
+                </Fragment>
+              ))}
+            </div>
           </div>
         </div>
       )}
 
-      {present.length > 0 && (
+      {(present.length > 0 || hasUnitBreak) && (
         <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500">
+          {hasUnitBreak && (
+            <span className="inline-flex items-center gap-1">
+              <NoPassage />
+              No passage between units
+            </span>
+          )}
           {present.map((amenity) => (
             <span key={amenity.key} className="inline-flex items-center gap-1">
               <SbbIcon name={amenity.icon} title={amenity.label} className="h-4 w-auto text-slate-600" />
