@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import type { FormationCar, FormationResponse } from '../api/types'
 import { FormationDiagram } from '../components/FormationDiagram'
-import { COLOR_STYLES, useColorStyle } from '../hooks/useColorStyle'
+import { useSbbStyle } from '../hooks/useSbbStyle'
 
 // Hidden page with hand-built formations for exercising the diagram without live
 // API data, in particular multi-unit (double traction) trains. Reach it via the
@@ -72,30 +72,33 @@ const SAMPLES: { title: string; description: string; formation: FormationRespons
   },
 ]
 
-function ColorStylePicker() {
-  const { style, setStyle } = useColorStyle()
+function SbbStyleToggle() {
+  const { enabled, toggle } = useSbbStyle()
 
   return (
-    <div className="grid grid-cols-2 gap-2">
-      {COLOR_STYLES.map((option) => (
-        <button
-          key={option.id}
-          type="button"
-          onClick={() => setStyle(option.id)}
-          className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
-            style === option.id
-              ? 'border-accent bg-accent-soft text-accent'
-              : 'border-line text-dim hover:bg-subtle hover:text-fg'
+    <button
+      type="button"
+      role="switch"
+      aria-checked={enabled}
+      onClick={toggle}
+      className="flex w-full items-center justify-between gap-3 rounded-lg border border-line bg-surface px-3 py-2.5 text-left"
+    >
+      <span>
+        <span className="block text-sm font-medium text-fg">SBB style</span>
+        <span className="block text-xs text-dim">Swap the palette for SBB red and greys.</span>
+      </span>
+      <span
+        className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
+          enabled ? 'bg-accent' : 'bg-subtle2'
+        }`}
+      >
+        <span
+          className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+            enabled ? 'translate-x-5' : 'translate-x-0.5'
           }`}
-        >
-          <span
-            className="h-4 w-4 shrink-0 rounded-full ring-1 ring-black/10"
-            style={{ backgroundColor: option.swatch }}
-          />
-          {option.label}
-        </button>
-      ))}
-    </div>
+        />
+      </span>
+    </button>
   )
 }
 
@@ -110,11 +113,8 @@ export function FormationSamplesPage() {
       <p className="mt-1 text-sm text-dim">Hidden settings and test data.</p>
 
       <section className="mt-4">
-        <h3 className="text-sm font-semibold text-fg">Color style</h3>
-        <p className="mb-2 text-xs text-dim">
-          Pick an accent palette. Works in both light and dark mode (toggle in the header).
-        </p>
-        <ColorStylePicker />
+        <h3 className="mb-2 text-sm font-semibold text-fg">Appearance</h3>
+        <SbbStyleToggle />
       </section>
 
       <h3 className="mt-6 text-sm font-semibold text-fg">Formation samples</h3>

@@ -57,47 +57,47 @@
   --color-first-border: #a16207;
 }
 
-/* Color styles (palettes) chosen in the secret menu via a data-theme attribute
-   on <html>. They only re-map the accent, so they layer on top of light/dark.
-   Placed after .dark: a plain [data-theme] wins the light accent, and a
-   .dark[data-theme] (higher specificity) supplies the matching dark accent. */
+/* Secret "SBB style": a full theme, not just an accent. Selected in the secret
+   menu via a data-theme attribute on <html>. It re-maps the whole palette to
+   SBB's red plus neutral (non-blue) greys, and switches to a Helvetica-style
+   face. Placed after .dark so the .dark[data-theme="sbb"] block (higher
+   specificity) supplies the dark variant. */
 [data-theme="sbb"] {
+  --color-canvas: #f6f6f6;
+  --color-surface: #ffffff;
+  --color-subtle: #ededed;
+  --color-subtle2: #dcdcdc;
+  --color-line: #d7d7d7;
+
+  --color-fg: #1a1a1a;
+  --color-dim: #595959;
+  --color-faint: #8a8a8a;
+
   --color-accent: #eb0000;
-  --color-accent-hover: #c50016;
+  --color-accent-hover: #c60018;
   --color-accent-fg: #ffffff;
   --color-accent-soft: #fde7e7;
 }
+
 .dark[data-theme="sbb"] {
-  --color-accent: #ef3340;
-  --color-accent-hover: #f4636d;
+  --color-canvas: #0d0d0d;
+  --color-surface: #1b1b1b;
+  --color-subtle: #262626;
+  --color-subtle2: #383838;
+  --color-line: #3a3a3a;
+
+  --color-fg: #f2f2f2;
+  --color-dim: #b0b0b0;
+  --color-faint: #7a7a7a;
+
+  --color-accent: #ff3b3b;
+  --color-accent-hover: #ff5c5c;
   --color-accent-fg: #ffffff;
-  --color-accent-soft: #3a1416;
+  --color-accent-soft: #3a1414;
 }
 
-[data-theme="emerald"] {
-  --color-accent: #059669;
-  --color-accent-hover: #047857;
-  --color-accent-fg: #ffffff;
-  --color-accent-soft: #d1fae5;
-}
-.dark[data-theme="emerald"] {
-  --color-accent: #34d399;
-  --color-accent-hover: #6ee7b7;
-  --color-accent-fg: #052e23;
-  --color-accent-soft: #07291f;
-}
-
-[data-theme="sky"] {
-  --color-accent: #0284c7;
-  --color-accent-hover: #0369a1;
-  --color-accent-fg: #ffffff;
-  --color-accent-soft: #e0f2fe;
-}
-.dark[data-theme="sky"] {
-  --color-accent: #38bdf8;
-  --color-accent-hover: #7dd3fc;
-  --color-accent-fg: #07263a;
-  --color-accent-soft: #082f49;
+[data-theme="sbb"] body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 html {
