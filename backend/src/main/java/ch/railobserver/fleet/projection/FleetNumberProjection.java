@@ -1,7 +1,6 @@
 package ch.railobserver.fleet.projection;
 
-public interface FleetSeenCountProjection {
+public interface FleetNumberProjection {
     Long getVehicleTypeId();
-
-    Long getSeenCount();
+    String getNumber();
 }

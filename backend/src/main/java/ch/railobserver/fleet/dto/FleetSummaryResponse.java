@@ -11,9 +11,7 @@ public record FleetSummaryResponse(
         long missingCount
 ) {
 
-    public static FleetSummaryResponse from(VehicleType vehicleType, long seenCount) {
-        Integer fleetSize = vehicleType.getFleetSize();
-        long missingCount = fleetSize != null ? Math.max(0, fleetSize - seenCount) : 0;
+    public static FleetSummaryResponse from(VehicleType vehicleType, Integer fleetSize, long seenCount, long missingCount) {
         return new FleetSummaryResponse(
                 vehicleType.getId(),
                 vehicleType.getName(),

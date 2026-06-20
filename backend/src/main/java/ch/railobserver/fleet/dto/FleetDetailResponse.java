@@ -15,12 +15,12 @@ public record FleetDetailResponse(
         List<String> missingNumbers
 ) {
 
-    public static FleetDetailResponse from(VehicleType vehicleType, List<SeenVehicleResponse> seenVehicles, List<String> missingNumbers) {
+    public static FleetDetailResponse from(VehicleType vehicleType, Integer fleetSize, List<SeenVehicleResponse> seenVehicles, List<String> missingNumbers) {
         return new FleetDetailResponse(
                 vehicleType.getId(),
                 vehicleType.getName(),
                 vehicleType.getFamily(),
-                vehicleType.getFleetSize(),
+                fleetSize,
                 seenVehicles.size(),
                 missingNumbers.size(),
                 seenVehicles,

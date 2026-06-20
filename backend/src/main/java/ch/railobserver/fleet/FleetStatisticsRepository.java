@@ -1,6 +1,6 @@
 package ch.railobserver.fleet;
 
-import ch.railobserver.fleet.projection.FleetSeenCountProjection;
+import ch.railobserver.fleet.projection.FleetNumberProjection;
 import ch.railobserver.fleet.projection.SeenVehicleProjection;
 import ch.railobserver.sighting.SightingVehicle;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,11 +20,10 @@ public interface FleetStatisticsRepository extends JpaRepository<SightingVehicle
     List<SeenVehicleProjection> findSeenVehicles(@Param("vehicleTypeId") Long vehicleTypeId);
 
     @Query("""
-            SELECT vt.id AS vehicleTypeId, COUNT(DISTINCT v.id) AS seenCount
+            SELECT DISTINCT vt.id AS vehicleTypeId, v.number AS number
             FROM SightingVehicle sv
             JOIN sv.vehicle v
             JOIN v.vehicleType vt
-            GROUP BY vt.id
             """)
-    List<FleetSeenCountProjection> countSeenByFleet();
+    List<FleetNumberProjection> findSeenNumbersByFleet();
 }
