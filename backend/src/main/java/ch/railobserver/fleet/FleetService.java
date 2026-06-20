@@ -21,6 +21,16 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class FleetService {
 
+    // Operators are listed in this order; any not named here follow alphabetically.
+    // Within an operator, fleets sort by class number, then name.
+    private static final List<String> OPERATOR_ORDER = List.of("SBB", "SBB Cargo", "BLS", "SOB");
+
+    private static final Comparator<VehicleType> FLEET_ORDER =
+            Comparator.comparingInt(FleetService::operatorRank)
+                    .thenComparing(vt -> vt.getOperator() == null ? "" : vt.getOperator())
+                    .thenComparingInt(FleetService::classNumber)
+                    .thenComparing(VehicleType::getName);
+
     private final VehicleTypeRepository vehicleTypeRepository;
     private final FleetStatisticsRepository fleetStatisticsRepository;
     private final RosterVehicleRepository rosterVehicleRepository;
@@ -42,6 +52,7 @@ public class FleetService {
                         Collectors.mapping(FleetNumberProjection::getNumber, Collectors.toSet())));
 
         return vehicleTypeRepository.findAll().stream()
+                .sorted(FLEET_ORDER)
                 .map(vehicleType -> summarize(vehicleType,
                         rosterByType.getOrDefault(vehicleType.getId(), List.of()),
                         seenByType.getOrDefault(vehicleType.getId(), Set.of())))
@@ -90,5 +101,25 @@ public class FleetService {
 
     private List<String> sorted(List<String> numbers) {
         return numbers.stream().sorted().toList();
+    }
+
+    private static int operatorRank(VehicleType vehicleType) {
+        if (vehicleType.getOperator() == null) {
+            return OPERATOR_ORDER.size();
+        }
+        int index = OPERATOR_ORDER.indexOf(vehicleType.getOperator());
+        return index >= 0 ? index : OPERATOR_ORDER.size();
+    }
+
+    private static int classNumber(VehicleType vehicleType) {
+        String prefix = vehicleType.getNumberPrefix();
+        if (prefix == null) {
+            return Integer.MAX_VALUE;
+        }
+        try {
+            return Integer.parseInt(prefix);
+        } catch (NumberFormatException e) {
+            return Integer.MAX_VALUE;
+        }
     }
 }

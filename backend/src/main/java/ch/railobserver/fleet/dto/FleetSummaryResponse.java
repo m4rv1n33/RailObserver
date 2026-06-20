@@ -6,6 +6,7 @@ public record FleetSummaryResponse(
         Long id,
         String name,
         String family,
+        String operator,
         Integer fleetSize,
         long seenCount,
         long missingCount
@@ -16,6 +17,7 @@ public record FleetSummaryResponse(
                 vehicleType.getId(),
                 vehicleType.getName(),
                 vehicleType.getFamily(),
+                vehicleType.getOperator(),
                 fleetSize,
                 seenCount,
                 missingCount

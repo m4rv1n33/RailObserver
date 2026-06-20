@@ -127,6 +127,7 @@ export interface FleetSummaryResponse {
   id: number
   name: string
   family: string | null
+  operator: string | null
   fleetSize: number | null
   seenCount: number
   missingCount: number

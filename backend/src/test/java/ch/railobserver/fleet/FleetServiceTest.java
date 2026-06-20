@@ -83,10 +83,33 @@ class FleetServiceTest {
         assertThat(unrostered.missingCount()).isZero();
     }
 
+    @Test
+    void findAllOrdersByOperatorThenClassNumber() {
+        when(vehicleTypeRepository.findAll()).thenReturn(List.of(
+                fleet(3L, "Re 465", "BLS", "465"),
+                fleet(4L, "RhB Ge 4/4 II", "RhB", null),
+                fleet(2L, "RABDe 500", "SBB", "500"),
+                fleet(1L, "Re 460", "SBB", "460")));
+        when(rosterVehicleRepository.findAllNumbersByFleet()).thenReturn(List.of());
+        when(fleetStatisticsRepository.findSeenNumbersByFleet()).thenReturn(List.of());
+
+        List<FleetSummaryResponse> responses = service.findAll();
+
+        assertThat(responses).extracting(FleetSummaryResponse::name)
+                .containsExactly("Re 460", "RABDe 500", "Re 465", "RhB Ge 4/4 II");
+    }
+
     private static VehicleType vehicleType(Long id, String name) {
         VehicleType type = new VehicleType();
         type.setId(id);
         type.setName(name);
+        return type;
+    }
+
+    private static VehicleType fleet(Long id, String name, String operator, String numberPrefix) {
+        VehicleType type = vehicleType(id, name);
+        type.setOperator(operator);
+        type.setNumberPrefix(numberPrefix);
         return type;
     }
 

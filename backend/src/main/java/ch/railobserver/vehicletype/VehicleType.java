@@ -32,6 +32,8 @@ public class VehicleType {
 
     private String manufacturer;
 
+    private String operator;
+
     @Column(name = "fleet_size")
     private Integer fleetSize;
 

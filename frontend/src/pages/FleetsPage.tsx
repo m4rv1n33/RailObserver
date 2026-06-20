@@ -28,10 +28,21 @@ export function FleetsPage() {
 
       {fleets !== null && fleets.length > 0 && (
         <ul className="mt-4 space-y-2">
-          {fleets.map((fleet) => {
+          {fleets.map((fleet, index) => {
             const ratio = fleet.fleetSize ? fleet.seenCount / fleet.fleetSize : 0
+            const operator = fleet.operator ?? 'Other'
+            const showHeader = index === 0 || operator !== (fleets[index - 1].operator ?? 'Other')
             return (
               <li key={fleet.id}>
+                {showHeader && (
+                  <h3
+                    className={`mb-2 text-xs font-semibold uppercase tracking-wide text-faint ${
+                      index === 0 ? '' : 'mt-4'
+                    }`}
+                  >
+                    {operator}
+                  </h3>
+                )}
                 <Link
                   to={`/fleets/${fleet.id}`}
                   className="block rounded border-l-2 border-l-transparent border border-line bg-surface p-3 transition-colors hover:border-l-accent hover:border-accent"
