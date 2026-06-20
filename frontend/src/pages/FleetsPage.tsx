@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom'
 import { getFleets } from '../api/client'
 import type { FleetSummaryResponse } from '../api/types'
 
+// Only these operators are shown in the fleet list.
+const VISIBLE_OPERATORS = ['SBB', 'SBB Cargo', 'SOB', 'Thurbo', 'Railcare']
+
 export function FleetsPage() {
   const [fleets, setFleets] = useState<FleetSummaryResponse[] | null>(null)
   const [error, setError] = useState(false)
@@ -13,6 +16,10 @@ export function FleetsPage() {
       .catch(() => setError(true))
   }, [])
 
+  const visibleFleets = (fleets ?? []).filter(
+    (fleet) => fleet.operator !== null && VISIBLE_OPERATORS.includes(fleet.operator),
+  )
+
   return (
     <div className="p-4">
       <h2 className="text-xl font-semibold tracking-tight">Fleets</h2>
@@ -22,16 +29,16 @@ export function FleetsPage() {
 
       {fleets === null && !error && <p className="mt-4 text-sm text-dim">Loading...</p>}
 
-      {fleets !== null && fleets.length === 0 && (
+      {fleets !== null && visibleFleets.length === 0 && (
         <p className="mt-4 text-sm text-dim">No fleets yet.</p>
       )}
 
-      {fleets !== null && fleets.length > 0 && (
+      {visibleFleets.length > 0 && (
         <ul className="mt-4 space-y-2">
-          {fleets.map((fleet, index) => {
+          {visibleFleets.map((fleet, index) => {
             const ratio = fleet.fleetSize ? fleet.seenCount / fleet.fleetSize : 0
             const operator = fleet.operator ?? 'Other'
-            const showHeader = index === 0 || operator !== (fleets[index - 1].operator ?? 'Other')
+            const showHeader = index === 0 || operator !== (visibleFleets[index - 1].operator ?? 'Other')
             return (
               <li key={fleet.id}>
                 {showHeader && (
