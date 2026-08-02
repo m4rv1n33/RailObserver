@@ -7,11 +7,14 @@ import { FormationDiagram } from '../components/FormationDiagram'
 import { Field } from '../components/Field'
 import { TextInput } from '../components/Input'
 import { Button } from '../components/Button'
-import { toDateOnly } from '../lib/datetime'
+import { toDateOnly, toDateTimeLocal } from '../lib/datetime'
 
 export function FormationPage() {
   const [trainNumber, setTrainNumber] = useState('')
-  const [date, setDate] = useState(() => toDateOnly(new Date()))
+  // The formation API works per operating day, but the departure list below needs
+  // a time of day, so one datetime field feeds both.
+  const [when, setWhen] = useState(() => toDateTimeLocal(new Date()))
+  const date = when.slice(0, 10)
   const [operator, setOperator] = useState('')
   const [station, setStation] = useState('')
   const [lookupStation, setLookupStation] = useState('')
@@ -39,7 +42,9 @@ export function FormationPage() {
     const train = departure.trainNumber ?? ''
     const departureDate = departure.departureTime ? toDateOnly(new Date(departure.departureTime)) : date
     setTrainNumber(train)
-    setDate(departureDate)
+    if (departure.departureTime) {
+      setWhen(toDateTimeLocal(new Date(departure.departureTime)))
+    }
     if (departure.operator) setOperator(departure.operator)
     void lookup(train, departureDate, departure.operator ?? operator)
   }
@@ -62,15 +67,22 @@ export function FormationPage() {
         </Field>
 
         {lookupStation && (
-          <DepartureLookup station={lookupStation} when={`${date}T12:00`} onSelect={applyDeparture} />
+          <DepartureLookup station={lookupStation} when={when} onSelect={applyDeparture} />
         )}
 
         <Field label="Train number">
           <TextInput type="text" value={trainNumber} onChange={(event) => setTrainNumber(event.target.value)} />
         </Field>
 
-        <Field label="Date">
-          <TextInput type="date" value={date} onChange={(event) => setDate(event.target.value)} />
+        <Field label="Date and time">
+          <TextInput
+            type="datetime-local"
+            value={when}
+            onChange={(event) => setWhen(event.target.value)}
+          />
+          <p className="mt-1 text-xs text-dim">
+            The formation is looked up per day; the time only picks the departures shown above.
+          </p>
         </Field>
 
         <Field label="Operator">
