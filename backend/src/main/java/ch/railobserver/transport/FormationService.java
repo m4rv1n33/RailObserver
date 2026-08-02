@@ -48,13 +48,16 @@ public class FormationService {
 
         // Cars sharing a unit group (from the formation short string) form one
         // coupled unit and must report the same number, even when their running
-        // numbers span several blocks as on the RABe 501 Giruno. The first tractive
-        // car of a group (lowest position) supplies the canonical number.
+        // numbers span several blocks as on the RABe 501 Giruno (501 0xx and
+        // 501 2xx). The lowest number in the group is the trainset number; the
+        // higher block only numbers the cars at the other end of the set.
         Map<Integer, String> unitNumberByGroup = new HashMap<>();
         for (FormationVehicle vehicle : vehicles) {
             if (isTractive(vehicle) && vehicle.unitGroup() != null) {
-                unitNumberByGroup.computeIfAbsent(vehicle.unitGroup(),
-                        g -> toTrainsetNumber(vehicle.vehicleNumber()));
+                String number = toTrainsetNumber(vehicle.vehicleNumber());
+                if (number != null) {
+                    unitNumberByGroup.merge(vehicle.unitGroup(), number, FormationService::lowerNumber);
+                }
             }
         }
 
@@ -92,6 +95,14 @@ public class FormationService {
 
         cars.sort((a, b) -> Integer.compare(a.position(), b.position()));
         return new FormationResponse(List.copyOf(cars), labelPositions(unitsByNumber.values()));
+    }
+
+    // Shorter numbers sort first so a malformed entry cannot win over a real one.
+    private static String lowerNumber(String a, String b) {
+        if (a.length() != b.length()) {
+            return a.length() < b.length() ? a : b;
+        }
+        return a.compareTo(b) <= 0 ? a : b;
     }
 
     // EVNs of tractive units and railcars start with a 9 (UIC types 90-99).

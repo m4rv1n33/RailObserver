@@ -97,6 +97,38 @@ class FormationServiceTest {
     }
 
     @Test
+    void detect_namesGirunoAfterItsLowestBlockWhenTheSetRunsReversed() {
+        // EC 24 Bellinzona: both Girunos run with the "501 2xx" cars leading, so
+        // the first car by position carries the higher block. The unit is still
+        // named after the lower one (501-004, not 501-204).
+        List<FormationVehicle> vehicles = new java.util.ArrayList<>();
+        int position = 1;
+        for (int car = 1; car <= 6; car++) {
+            vehicles.add(car(position++, "93 85 " + car + " 501 204-0", car + "501204", 0));
+        }
+        for (int car = 1; car <= 5; car++) {
+            vehicles.add(car(position++, "93 85 " + car + " 501 004-0", car + "501004", 0));
+        }
+        for (int car = 1; car <= 6; car++) {
+            vehicles.add(car(position++, "93 85 " + car + " 501 206-0", car + "501206", 1));
+        }
+        for (int car = 1; car <= 5; car++) {
+            vehicles.add(car(position++, "93 85 " + car + " 501 006-0", car + "501006", 1));
+        }
+        when(provider.getFormation(any(), any(), any())).thenReturn(vehicles);
+        when(recognition.recognize(any())).thenReturn(Optional.empty());
+
+        FormationResponse result = service.detect("24", LocalDate.of(2026, 8, 2), "SBB");
+
+        assertThat(result.units()).extracting(FormationUnitResponse::number)
+                .containsExactly("501-004", "501-006");
+        assertThat(result.cars().subList(0, 11)).extracting(c -> c.unitNumber())
+                .containsOnly("501-004");
+        assertThat(result.cars().subList(11, 22)).extracting(c -> c.unitNumber())
+                .containsOnly("501-006");
+    }
+
+    @Test
     void detect_labelsTwoUnitsFrontAndBack() {
         when(provider.getFormation(any(), any(), any())).thenReturn(List.of(
                 car(1, "94 85 0 512 002-0", "0512002"),
