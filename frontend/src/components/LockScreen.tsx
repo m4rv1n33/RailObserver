@@ -41,9 +41,7 @@ export function LockScreen({ onUnlocked }: { onUnlocked: () => void }) {
             RO
           </span>
           <h1 className="text-lg font-semibold tracking-tight">RailObserver is locked</h1>
-          <p className="text-sm text-dim">
-            This is a private logbook. Enter the code to continue.
-          </p>
+          <p className="text-sm text-dim">This instance is for personal use only.</p>
         </div>
 
         <TextInput
