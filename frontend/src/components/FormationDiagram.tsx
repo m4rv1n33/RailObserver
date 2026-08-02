@@ -69,10 +69,14 @@ function Car({ car, roundLeft, roundRight }: { car: FormationCar; roundLeft: boo
         {car.sectors && <span className="rounded bg-subtle2 px-1 py-0.5">{car.sectors}</span>}
       </div>
       <div
-        className={`flex h-24 w-full flex-col items-center justify-between rounded-md border-2 p-1 ${carStyle(car)} ${ends}`}
+        className={`relative flex h-24 w-full flex-col items-center justify-between rounded-md border-2 p-1 ${carStyle(car)} ${ends}`}
       >
         <span className="text-base font-bold leading-none">{classLabel(car)}</span>
-        <span className="font-num text-[10px] leading-none opacity-70">{shortType(car)}</span>
+        {/* Centered on the body, not between the rows above and below it, so a
+            second row of amenity icons does not push it off the connector line. */}
+        <span className="absolute inset-x-0 top-1/2 -translate-y-1/2 text-center font-num text-[10px] leading-none opacity-70">
+          {shortType(car)}
+        </span>
         {/* Point amenities stay on top; low-floor (NF) always gets its own bottom
             row so the layout is stable instead of wrapping in icon order. */}
         <span className="flex min-h-4 flex-col items-center gap-0.5">
