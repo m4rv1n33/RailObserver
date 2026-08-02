@@ -13,6 +13,18 @@ spring:
     locations: classpath:db/migration
 
 railobserver:
+  auth:
+    # Shared PIN or passphrase for the whole app. Empty means the API stays open,
+    # which is fine locally; the prod profile refuses to start without it.
+    pin: ${RAILOBSERVER_AUTH_PIN:}
+    # Random value (32+ characters) signing the session cookie. Changing it logs
+    # out every device.
+    secret: ${RAILOBSERVER_AUTH_SECRET:}
+    session-days: 365
+    # Cookies marked secure are only sent over HTTPS; set false to test over http.
+    cookie-secure: ${RAILOBSERVER_AUTH_COOKIE_SECURE:true}
+    max-attempts: 5
+    lockout-minutes: 15
   formation:
     # opentransportdata.swiss Train Formation API. Token comes from the
     # OTD_API_TOKEN environment variable or backend/.env (see .env.example);
