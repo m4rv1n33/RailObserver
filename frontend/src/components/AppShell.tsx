@@ -26,7 +26,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-svh flex-col bg-canvas text-fg">
+    <div className="flex h-svh flex-col bg-canvas text-fg">
       <header className="flex items-center justify-between border-b border-line bg-surface px-4 py-3">
         <h1
           className="flex select-none items-center gap-2.5 text-lg font-semibold tracking-tight"
@@ -43,9 +43,12 @@ export function AppShell({ children }: { children: ReactNode }) {
         <ThemeToggle />
       </header>
 
-      <main className="flex-1 overflow-y-auto pb-16">{children}</main>
+      {/* min-h-0 keeps main the scroll container instead of letting the flex
+          column grow the window, so sticky footers inside pages land on top of
+          the nav rather than under it. */}
+      <main className="min-h-0 flex-1 overflow-y-auto">{children}</main>
 
-      <nav className="fixed inset-x-0 bottom-0 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)]">
+      <nav className="shrink-0 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)]">
         <div className="grid grid-cols-7">
           {tabs.map((tab) => (
             <NavLink

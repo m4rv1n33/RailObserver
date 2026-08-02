@@ -55,7 +55,7 @@ export function DepartureLookup({ station, when, onSelect }: DepartureLookupProp
       )}
 
       {departures !== null && departures.length > 0 && (
-        <ul className="divide-y divide-line overflow-hidden rounded-md border border-line">
+        <ul className="max-h-64 divide-y divide-line overflow-y-auto rounded-md border border-line">
           {departures.map((departure, index) => (
             <li key={index}>
               <button
