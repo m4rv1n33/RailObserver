@@ -24,7 +24,7 @@ export function LockScreen({ onUnlocked }: { onUnlocked: () => void }) {
         status === 429
           ? 'Too many attempts. Wait a few minutes before trying again.'
           : status === 401
-            ? 'Wrong code.'
+            ? 'Incorrect access code'
             : 'Could not reach the server.',
       )
       setPin('')
