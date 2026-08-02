@@ -62,6 +62,15 @@ export function LockScreen({ onUnlocked }: { onUnlocked: () => void }) {
           {busy ? 'Checking...' : 'Unlock'}
         </Button>
       </form>
+
+      <a
+        href="https://m4rv1n.dev"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-10 text-xs text-faint transition-colors hover:text-dim"
+      >
+        m4rv1n.dev
+      </a>
     </div>
   )
 }
