@@ -8,7 +8,7 @@ const tabs = [
   { to: '/quick', label: 'Quick', end: false },
   { to: '/sightings', label: 'Sightings', end: false },
   { to: '/fleets', label: 'Fleets', end: false },
-  { to: '/formation', label: 'Trains', end: false },
+  { to: '/formation', label: 'Consists', end: false },
   { to: '/map', label: 'Map', end: false },
   { to: '/statistics', label: 'Stats', end: false },
 ]
