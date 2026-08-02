@@ -52,12 +52,21 @@ public class OpendataChProvider implements TransportDataProvider {
             return response.stations().stream()
                     .filter(station -> station.id() != null && station.name() != null
                             && (station.icon() == null || !NON_RAIL_ICONS.contains(station.icon())))
-                    .map(station -> new StationResponse(station.id(), station.name()))
+                    .map(OpendataChProvider::toStation)
                     .toList();
         } catch (RestClientException e) {
             log.warn("Could not search stations for query '{}': {}", query, e.getMessage());
             return List.of();
         }
+    }
+
+    // opendata.ch reports WGS84 coordinates as x = latitude, y = longitude.
+    private static StationResponse toStation(Station station) {
+        Coordinate coordinate = station.coordinate();
+        boolean wgs84 = coordinate != null && coordinate.x() != null && coordinate.y() != null
+                && (coordinate.type() == null || coordinate.type().equalsIgnoreCase("WGS84"));
+        return new StationResponse(station.id(), station.name(),
+                wgs84 ? coordinate.x() : null, wgs84 ? coordinate.y() : null);
     }
 
     // transport.opendata.ch expects the board time as local Swiss wall-clock time.
@@ -125,7 +134,11 @@ public class OpendataChProvider implements TransportDataProvider {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    private record Station(String id, String name, String icon) {
+    private record Station(String id, String name, String icon, Coordinate coordinate) {
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private record Coordinate(String type, Double x, Double y) {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

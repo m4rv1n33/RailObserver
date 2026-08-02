@@ -152,6 +152,8 @@ export interface FleetDetailResponse {
 export interface StationResponse {
   id: string
   name: string
+  latitude?: number | null
+  longitude?: number | null
 }
 
 export interface DepartureResponse {
