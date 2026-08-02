@@ -53,6 +53,11 @@ final class FormationShortString {
         int nextGroup = 0;
         for (String raw : body.split(",")) {
             String token = raw.trim();
+            // A leading "-" marks the car's orientation and can sit in front of an
+            // opening group bracket ("-(1"), so strip it before looking for one.
+            if (token.startsWith("-")) {
+                token = token.substring(1);
+            }
             if (token.startsWith("(")) {
                 groupStart = classes.size();
                 currentGroup = nextGroup++;

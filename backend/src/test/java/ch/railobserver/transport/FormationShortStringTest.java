@@ -82,6 +82,22 @@ class FormationShortStringTest {
     }
 
     @Test
+    void groupsSecondUnitWhenItsBracketFollowsAnOrientationMarker() {
+        // EC 24 Bellinzona, two coupled RABe 501 Giruno. The second unit's group
+        // opens as "-(1": the leading "-" is the car orientation and must not hide
+        // the bracket, otherwise those 11 cars end up ungrouped and the set is
+        // reported as two separate units.
+        List<Attrs> cars = FormationShortString.parse(
+                "[(1:11,1:10#BZ,1:9#KW,1:8#BHP;NF,WR:7#BHP,2:6#BHP;NF,-2,2:4#KW,2:3#VR,2:2#KW,2):1,"
+                        + "-(1,-1,-1,-1,-WR,-2,-2,-2,-2,-2,-2)]");
+
+        assertThat(cars).hasSize(22);
+        assertThat(cars.subList(0, 11)).extracting(Attrs::group).containsOnly(cars.get(0).group());
+        assertThat(cars.subList(11, 22)).extracting(Attrs::group).containsOnly(cars.get(11).group());
+        assertThat(cars.get(0).group()).isNotEqualTo(cars.get(11).group());
+    }
+
+    @Test
     void returnsEmptyWhenNoTrainBody() {
         assertThat(FormationShortString.parse(null)).isEmpty();
         assertThat(FormationShortString.parse("@A,F,F,F")).isEmpty();
