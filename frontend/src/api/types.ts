@@ -1,3 +1,8 @@
+export interface SessionResponse {
+  authenticated: boolean
+  authRequired: boolean
+}
+
 export interface VehicleTypeResponse {
   id: number
   name: string

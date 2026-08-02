@@ -1,6 +1,7 @@
 import { useRef, type ReactNode } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { ThemeToggle } from './ThemeToggle'
+import { useAuth } from '../hooks/useAuth'
 
 const tabs = [
   { to: '/', label: 'Advanced', end: true },
@@ -15,6 +16,7 @@ const tabs = [
 export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate()
   const taps = useRef(0)
+  const { authRequired, lock } = useAuth()
 
   // Easter egg: tapping the title five times opens the hidden sample formations.
   function tapTitle() {
@@ -40,7 +42,23 @@ export function AppShell({ children }: { children: ReactNode }) {
             <span className="ml-1 align-middle text-accent">·</span>
           </span>
         </h1>
-        <ThemeToggle />
+        <div className="flex items-center">
+          <ThemeToggle />
+          {authRequired && (
+            <button
+              type="button"
+              onClick={lock}
+              aria-label="Lock"
+              title="Lock"
+              className="rounded-full p-2 text-dim transition-colors hover:bg-subtle hover:text-fg"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-5 w-5">
+                <rect x="4" y="10" width="16" height="11" rx="2" />
+                <path strokeLinecap="round" d="M8 10V7a4 4 0 1 1 8 0v3" />
+              </svg>
+            </button>
+          )}
+        </div>
       </header>
 
       {/* min-h-0 keeps main the scroll container instead of letting the flex

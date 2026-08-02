@@ -10,6 +10,7 @@ import type {
   MonthlyCountResponse,
   OperatorCountResponse,
   SightingLocationResponse,
+  SessionResponse,
   SightingResponse,
   StationCountResponse,
   StationResponse,
@@ -30,13 +31,25 @@ export class ApiError extends Error {
   }
 }
 
+// Set by AuthGate so an expired session anywhere in the app returns to the lock
+// screen instead of surfacing as a random failed request.
+let onUnauthorized: (() => void) | null = null
+
+export function setUnauthorizedHandler(handler: (() => void) | null) {
+  onUnauthorized = handler
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`/api${path}`, {
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'same-origin',
     ...init,
   })
 
   if (!response.ok) {
+    if (response.status === 401 && !path.startsWith('/auth/')) {
+      onUnauthorized?.()
+    }
     throw new ApiError(response.status, await response.text())
   }
 
@@ -45,6 +58,18 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   }
 
   return (await response.json()) as T
+}
+
+export function getSession(): Promise<SessionResponse> {
+  return request('/auth/session')
+}
+
+export function login(pin: string): Promise<void> {
+  return request('/auth/login', { method: 'POST', body: JSON.stringify({ pin }) })
+}
+
+export function logout(): Promise<void> {
+  return request('/auth/logout', { method: 'POST' })
 }
 
 export function getVehicles(): Promise<VehicleResponse[]> {
