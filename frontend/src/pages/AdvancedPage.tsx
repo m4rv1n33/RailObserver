@@ -19,6 +19,7 @@ export function AdvancedPage() {
   const [latitude, setLatitude] = useState<number | null>(null)
   const [longitude, setLongitude] = useState<number | null>(null)
   const [locationStatus, setLocationStatus] = useState<'idle' | 'locating' | 'error'>('idle')
+  const [locationSource, setLocationSource] = useState<'none' | 'station' | 'gps'>('none')
   const [line, setLine] = useState('')
   const [trainNumber, setTrainNumber] = useState('')
   const [destination, setDestination] = useState('')
@@ -27,6 +28,19 @@ export function AdvancedPage() {
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [formationStatus, setFormationStatus] = useState<'idle' | 'detecting' | 'done' | 'empty'>('idle')
   const [formation, setFormation] = useState<FormationResponse | null>(null)
+
+  // Service data comes only from picking a departure, so it is either fully
+  // populated or absent.
+  const hasService = Boolean(line || trainNumber || destination || departureTime)
+
+  function clearService() {
+    setLine('')
+    setTrainNumber('')
+    setDestination('')
+    setDepartureTime('')
+    setFormationStatus('idle')
+    setFormation(null)
+  }
 
   async function applyDeparture(departure: DepartureResponse) {
     if (departure.line) setLine(departure.line)
@@ -62,6 +76,7 @@ export function AdvancedPage() {
       (position) => {
         setLatitude(position.coords.latitude)
         setLongitude(position.coords.longitude)
+        setLocationSource('gps')
         setLocationStatus('idle')
       },
       () => setLocationStatus('error'),
@@ -76,6 +91,7 @@ export function AdvancedPage() {
     setLatitude(null)
     setLongitude(null)
     setLocationStatus('idle')
+    setLocationSource('none')
     setLine('')
     setTrainNumber('')
     setDestination('')
@@ -89,8 +105,6 @@ export function AdvancedPage() {
     const vehicleNumbers = vehicles.all()
     if (vehicleNumbers.length === 0) return
 
-    const hasService = line.trim() || trainNumber.trim() || destination.trim() || departureTime
-
     setStatus('saving')
     try {
       await createSighting({
@@ -102,9 +116,9 @@ export function AdvancedPage() {
         formation,
         service: hasService
           ? {
-              line: line.trim() || null,
-              trainNumber: trainNumber.trim() || null,
-              destination: destination.trim() || null,
+              line: line || null,
+              trainNumber: trainNumber || null,
+              destination: destination || null,
               departureTime: departureTime ? new Date(departureTime).toISOString() : null,
             }
           : null,
@@ -119,7 +133,7 @@ export function AdvancedPage() {
   }
 
   return (
-    <div className="p-4">
+    <div className="flex min-h-full flex-col p-4">
       <h2 className="text-xl font-semibold tracking-tight">Advanced</h2>
       <p className="mt-1 text-sm text-dim">Log a sighting with full details.</p>
 
@@ -160,6 +174,17 @@ export function AdvancedPage() {
             onSelect={(selected) => {
               setStation(selected.name)
               setLookupStation(selected.name)
+              // A picked station puts the sighting on the map without GPS, but a
+              // real GPS fix is more precise and keeps precedence once taken.
+              if (
+                locationSource !== 'gps' &&
+                typeof selected.latitude === 'number' &&
+                typeof selected.longitude === 'number'
+              ) {
+                setLatitude(selected.latitude)
+                setLongitude(selected.longitude)
+                setLocationSource('station')
+              }
             }}
           />
         </Field>
@@ -172,6 +197,7 @@ export function AdvancedPage() {
             {latitude !== null && longitude !== null && (
               <span className="text-sm text-dim">
                 {latitude.toFixed(5)}, {longitude.toFixed(5)}
+                {locationSource === 'station' && ' (station)'}
               </span>
             )}
           </div>
@@ -180,23 +206,26 @@ export function AdvancedPage() {
           )}
         </Field>
 
-        <fieldset className="space-y-4 rounded-md border border-line p-3">
+        <fieldset className="space-y-2 rounded-md border border-line p-3">
           <legend className="px-1 text-sm font-medium text-fg">Service</legend>
 
-          <p className="text-xs text-dim">Departures for the station and observed time above.</p>
+          {hasService ? (
+            <div className="flex items-center justify-between gap-2 text-sm">
+              <span>
+                <span className="font-medium text-accent">
+                  {[line, trainNumber].filter(Boolean).join(' ')}
+                </span>
+                {destination && <span className="text-dim">{' to '}</span>}
+                {destination}
+              </span>
+              <button type="button" onClick={clearService} className="text-sm text-dim underline">
+                Clear
+              </button>
+            </div>
+          ) : (
+            <p className="text-xs text-dim">Departures for the station and observed time above.</p>
+          )}
           <DepartureLookup station={lookupStation} when={observedAt} onSelect={applyDeparture} />
-
-          <Field label="Line">
-            <TextInput type="text" value={line} onChange={(event) => setLine(event.target.value)} />
-          </Field>
-
-          <Field label="Train number">
-            <TextInput type="text" value={trainNumber} onChange={(event) => setTrainNumber(event.target.value)} />
-          </Field>
-
-          <Field label="Destination">
-            <TextInput type="text" value={destination} onChange={(event) => setDestination(event.target.value)} />
-          </Field>
         </fieldset>
 
         <Field label="Notes">
@@ -204,18 +233,21 @@ export function AdvancedPage() {
         </Field>
       </div>
 
-      <Button
-        onClick={() => void save()}
-        disabled={status === 'saving' || vehicles.all().length === 0}
-        className="mt-4 w-full py-3 text-lg font-semibold"
-      >
-        {status === 'saving' ? 'Saving...' : 'Save sighting'}
-      </Button>
-
-      {status === 'saved' && <p className="mt-3 text-sm text-success">Sighting saved.</p>}
-      {status === 'error' && (
-        <p className="mt-3 text-sm text-danger">Could not save sighting. Try again.</p>
-      )}
+      {/* Sticks to the bottom of the scroll container so saving never requires
+          scrolling past the departure list. */}
+      <div className="sticky bottom-0 z-10 -mx-4 -mb-4 mt-auto border-t border-line bg-canvas px-4 py-3">
+        {status === 'saved' && <p className="mb-2 text-sm text-success">Sighting saved.</p>}
+        {status === 'error' && (
+          <p className="mb-2 text-sm text-danger">Could not save sighting. Try again.</p>
+        )}
+        <Button
+          onClick={() => void save()}
+          disabled={status === 'saving' || vehicles.all().length === 0}
+          className="w-full py-3 text-lg font-semibold"
+        >
+          {status === 'saving' ? 'Saving...' : 'Save sighting'}
+        </Button>
+      </div>
     </div>
   )
 }
