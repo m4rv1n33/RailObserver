@@ -14,8 +14,7 @@ train number, and destination, is optional and never gets in the way of a quick
 log.
 
 This is a single-user, personal project. It deliberately has no social, sharing,
-or community features. It is built to work well on an iPhone and to stay usable
-offline where possible.
+or community features. It is built to work well on an iPhone and Desktop.
 
 ## What the app does
 
