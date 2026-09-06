@@ -108,3 +108,13 @@ npm run dev
 ```
 
 The app runs on `http://localhost:5173` and proxies `/api` to the backend.
+
+## Deployment
+
+Running this outside local development needs work that is not done yet: there is
+no container image, no reverse proxy and no backup. Two documents cover it.
+
+- [docs/PRODUCTION.md](docs/PRODUCTION.md) - packaging, deployment, data safety
+  and operations
+- [docs/SECURITY.md](docs/SECURITY.md) - threat model, the auth design, and the
+  hardening checklist
