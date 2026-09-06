@@ -11,6 +11,8 @@ interface ChipListProps {
   emptyText: string
 }
 
+const chipClass = 'border px-2.5 py-1 font-num text-xs transition-colors'
+
 export function ChipList({ items, emptyText }: ChipListProps) {
   if (items.length === 0) {
     return <p className="text-sm text-dim">{emptyText}</p>
@@ -23,12 +25,12 @@ export function ChipList({ items, emptyText }: ChipListProps) {
           <Link
             key={item.key}
             to={item.to}
-            className="rounded-md bg-accent px-2 py-1 text-xs font-medium text-accent-fg transition-colors hover:bg-accent-hover"
+            className={`${chipClass} border-subtle2 bg-surface text-fg hover:border-accent hover:text-accent`}
           >
             {item.label}
           </Link>
         ) : (
-          <span key={item.key} className="rounded-md bg-subtle px-2 py-1 text-xs font-medium text-dim">
+          <span key={item.key} className={`${chipClass} border-line bg-canvas text-faint`}>
             {item.label}
           </span>
         ),

@@ -48,7 +48,7 @@ export function VehicleDetailPage() {
 
       {vehicle && (
         <>
-          <h2 className="mt-2 text-lg font-semibold">{vehicle.number}</h2>
+          <h2 className="mt-3 font-num text-2xl font-bold tracking-tight">{vehicle.number}</h2>
           {vehicle.vehicleType && (
             <p className="mt-1 text-sm text-dim">
               {vehicle.vehicleType.name}

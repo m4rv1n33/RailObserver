@@ -66,7 +66,7 @@ function Car({ car, roundLeft, roundRight }: { car: FormationCar; roundLeft: boo
   return (
     <div className="flex w-20 shrink-0 flex-col items-center gap-1">
       <div className="flex h-5 items-center text-xs font-medium text-dim">
-        {car.sectors && <span className="rounded bg-subtle2 px-1 py-0.5">{car.sectors}</span>}
+        {car.sectors && <span className="bg-subtle2 px-1 py-0.5 font-mono">{car.sectors}</span>}
       </div>
       <div
         className={`relative flex h-24 w-full flex-col items-center justify-between rounded-md border-2 p-1 ${carStyle(car)} ${ends}`}
@@ -201,7 +201,7 @@ export function FormationDiagram({ formation }: { formation: FormationResponse }
           {formation.units.map((unit) => (
             <li key={unit.number} className="flex items-baseline gap-2">
               {unit.positionLabel && (
-                <span className="rounded bg-subtle2 px-1.5 py-0.5 text-xs font-medium uppercase text-dim">
+                <span className="bg-subtle2 px-1.5 py-0.5 font-mono text-xs uppercase tracking-wide text-dim">
                   {unit.positionLabel}
                 </span>
               )}

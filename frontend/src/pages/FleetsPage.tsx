@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getFleets } from '../api/client'
 import type { FleetSummaryResponse } from '../api/types'
+import { PageHeading } from '../components/PageHeading'
 
 // Only these operators are shown in the fleet list.
 const VISIBLE_OPERATORS = ['SBB', 'SBB Cargo', 'SOB', 'Thurbo', 'Railcare']
@@ -22,8 +23,12 @@ export function FleetsPage() {
 
   return (
     <div className="p-4">
-      <h2 className="text-xl font-semibold tracking-tight">Fleets</h2>
-      <p className="mt-1 text-sm text-dim">Seen vehicles per fleet.</p>
+      <PageHeading
+        index="04"
+        label="Fleets"
+        title="Fleets"
+        subtitle="Seen vehicles per fleet."
+      />
 
       {error && <p className="mt-4 text-sm text-danger">Could not load fleets.</p>}
 
@@ -43,7 +48,7 @@ export function FleetsPage() {
               <li key={fleet.id}>
                 {showHeader && (
                   <h3
-                    className={`mb-2 text-xs font-semibold uppercase tracking-wide text-faint ${
+                    className={`mb-2 font-mono text-xs uppercase tracking-widest text-faint ${
                       index === 0 ? '' : 'mt-4'
                     }`}
                   >
@@ -52,7 +57,7 @@ export function FleetsPage() {
                 )}
                 <Link
                   to={`/fleets/${fleet.id}`}
-                  className="block rounded border-l-2 border-l-transparent border border-line bg-surface p-3 transition-colors hover:border-l-accent hover:border-accent"
+                  className="block border border-line border-l-2 border-l-transparent bg-surface p-3 transition-colors hover:border-accent hover:border-l-accent"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-medium">{fleet.name}</span>

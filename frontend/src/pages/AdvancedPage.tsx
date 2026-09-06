@@ -10,6 +10,7 @@ import { StationAutocomplete } from '../components/StationAutocomplete'
 import { TextInput, Textarea } from '../components/Input'
 import { Button } from '../components/Button'
 import { toDateOnly, toDateTimeLocal } from '../lib/datetime'
+import { PageHeading } from '../components/PageHeading'
 
 export function AdvancedPage() {
   const vehicles = useVehicleNumbers()
@@ -134,8 +135,12 @@ export function AdvancedPage() {
 
   return (
     <div className="flex min-h-full flex-col p-4">
-      <h2 className="text-xl font-semibold tracking-tight">Advanced</h2>
-      <p className="mt-1 text-sm text-dim">Log a sighting with full details.</p>
+      <PageHeading
+        index="01"
+        label="Advanced"
+        title="Advanced"
+        subtitle="Log a sighting with full details."
+      />
 
       <div className="mt-4 space-y-4">
         <Field label="Vehicles">
@@ -206,7 +211,7 @@ export function AdvancedPage() {
           )}
         </Field>
 
-        <fieldset className="space-y-2 rounded-md border border-line p-3">
+        <fieldset className="space-y-2 border border-line p-4">
           <legend className="px-1 text-sm font-medium text-fg">Service</legend>
 
           {hasService ? (
@@ -241,6 +246,7 @@ export function AdvancedPage() {
           <p className="mb-2 text-sm text-danger">Could not save sighting. Try again.</p>
         )}
         <Button
+          variant="accent"
           onClick={() => void save()}
           disabled={status === 'saving' || vehicles.all().length === 0}
           className="w-full py-3 text-lg font-semibold"

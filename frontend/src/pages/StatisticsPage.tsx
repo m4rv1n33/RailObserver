@@ -9,6 +9,7 @@ import {
 } from '../api/client'
 import { StatList } from '../components/StatList'
 import type { StatItem } from '../components/StatList'
+import { PageHeading } from '../components/PageHeading'
 
 const MONTH_NAMES = [
   'January',
@@ -68,8 +69,12 @@ export function StatisticsPage() {
 
   return (
     <div className="p-4">
-      <h2 className="text-xl font-semibold tracking-tight">Statistics</h2>
-      <p className="mt-1 text-sm text-dim">Overview of your sightings.</p>
+      <PageHeading
+        index="07"
+        label="Statistics"
+        title="Statistics"
+        subtitle="Overview of your sightings."
+      />
 
       {error && <p className="mt-4 text-sm text-danger">Could not load statistics.</p>}
 

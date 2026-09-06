@@ -29,9 +29,9 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex h-svh flex-col bg-canvas text-fg">
-      <header className="flex items-center justify-between border-b border-line bg-surface px-4 py-3">
+      <header className="flex h-14 shrink-0 items-center justify-between border-b border-line bg-surface/85 px-4 backdrop-blur-md">
         <h1
-          className="flex select-none items-center gap-2.5 text-lg font-semibold tracking-tight"
+          className="flex select-none items-center gap-2.5 text-lg font-bold tracking-tight"
           onClick={tapTitle}
         >
           <span className="grid h-7 w-7 place-items-center border border-accent bg-accent font-num text-[0.7rem] font-bold leading-none text-accent-fg">
@@ -42,7 +42,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <span className="ml-1 align-middle text-accent">·</span>
           </span>
         </h1>
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
           <ThemeToggle />
           {authRequired && (
             <button
@@ -50,7 +50,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               onClick={lock}
               aria-label="Lock"
               title="Lock"
-              className="rounded-full p-2 text-dim transition-colors hover:bg-subtle hover:text-fg"
+              className="flex h-9 w-9 items-center justify-center rounded-md border border-line text-dim transition-colors hover:bg-subtle hover:text-fg"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-5 w-5">
                 <rect x="4" y="10" width="16" height="11" rx="2" />
@@ -77,7 +77,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 `border-t-2 py-2.5 text-center text-[0.8rem] font-medium tracking-tight transition-colors ${
                   isActive
                     ? 'border-accent text-accent'
-                    : 'border-transparent text-faint hover:text-fg'
+                    : 'border-transparent text-dim hover:text-fg'
                 }`
               }
             >

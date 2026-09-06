@@ -3,6 +3,7 @@ import { createSighting } from '../api/client'
 import { useVehicleNumbers } from '../hooks/useVehicleNumbers'
 import { VehicleNumberInput } from '../components/VehicleNumberInput'
 import { Button } from '../components/Button'
+import { PageHeading } from '../components/PageHeading'
 
 export function QuickPage() {
   const vehicles = useVehicleNumbers()
@@ -25,10 +26,12 @@ export function QuickPage() {
 
   return (
     <div className="p-4">
-      <h2 className="text-xl font-semibold tracking-tight">Quick</h2>
-      <p className="mt-1 text-sm text-dim">
-        Enter a vehicle number and save. Add more for a composition.
-      </p>
+      <PageHeading
+        index="02"
+        label="Quick"
+        title="Quick"
+        subtitle="Enter a vehicle number and save. Add more for a composition."
+      />
 
       <div className="mt-4">
         <VehicleNumberInput
@@ -43,6 +46,7 @@ export function QuickPage() {
       </div>
 
       <Button
+        variant="accent"
         onClick={() => void save()}
         disabled={status === 'saving' || vehicles.all().length === 0}
         className="mt-4 w-full py-3 text-lg font-semibold"

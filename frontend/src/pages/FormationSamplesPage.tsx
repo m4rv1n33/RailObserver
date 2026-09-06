@@ -78,10 +78,10 @@ export function FormationSamplesPage() {
         &larr; Back
       </Link>
 
-      <h2 className="mt-2 text-xl font-semibold tracking-tight">Secret menu</h2>
+      <h2 className="mt-3 text-2xl font-bold tracking-tight">Secret menu</h2>
       <p className="mt-1 text-sm text-dim">Hidden test data.</p>
 
-      <h3 className="mt-6 text-sm font-semibold text-fg">Formation samples</h3>
+      <h3 className="mt-6 font-mono text-xs uppercase tracking-widest text-faint">Formation samples</h3>
       <p className="text-xs text-dim">Hidden test data. Not real sightings.</p>
 
       <div className="mt-3 space-y-6">

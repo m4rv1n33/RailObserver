@@ -40,7 +40,7 @@ export function LockScreen({ onUnlocked }: { onUnlocked: () => void }) {
           <span className="grid h-12 w-12 place-items-center border border-accent bg-accent font-num text-sm font-bold leading-none text-accent-fg">
             RO
           </span>
-          <h1 className="text-lg font-semibold tracking-tight">RailObserver is locked</h1>
+          <h1 className="text-2xl font-bold tracking-tight">RailObserver is locked</h1>
           <p className="text-sm text-dim">This instance is for personal use only.</p>
         </div>
 

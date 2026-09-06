@@ -14,6 +14,7 @@ import type { FleetSummaryResponse, SightingLocationResponse, VehicleResponse } 
 import { Field } from '../components/Field'
 import { Select, TextInput } from '../components/Input'
 import { Button } from '../components/Button'
+import { PageHeading } from '../components/PageHeading'
 
 delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl
 L.Icon.Default.mergeOptions({ iconRetinaUrl, iconUrl, shadowUrl })
@@ -143,8 +144,12 @@ export function MapPage() {
 
   return (
     <div className="p-4">
-      <h2 className="text-xl font-semibold tracking-tight">Map</h2>
-      <p className="mt-1 text-sm text-dim">Where you have seen vehicles.</p>
+      <PageHeading
+        index="06"
+        label="Map"
+        title="Map"
+        subtitle="Where you have seen vehicles."
+      />
 
       <div className="mt-4 grid grid-cols-2 gap-3">
         <Field label="Fleet">
@@ -197,7 +202,7 @@ export function MapPage() {
 
       {error && <p className="mt-4 text-sm text-danger">Could not load sighting locations.</p>}
 
-      <div className="mt-4 h-[60vh] overflow-hidden rounded-md border border-line">
+      <div className="mt-4 h-[60vh] overflow-hidden border border-line">
         <MapContainer center={SWITZERLAND_CENTER} zoom={DEFAULT_ZOOM} className="h-full w-full">
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

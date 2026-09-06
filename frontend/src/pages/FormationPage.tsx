@@ -8,6 +8,7 @@ import { Field } from '../components/Field'
 import { TextInput } from '../components/Input'
 import { Button } from '../components/Button'
 import { toDateOnly, toDateTimeLocal } from '../lib/datetime'
+import { PageHeading } from '../components/PageHeading'
 
 export function FormationPage() {
   const [trainNumber, setTrainNumber] = useState('')
@@ -51,8 +52,12 @@ export function FormationPage() {
 
   return (
     <div className="p-4">
-      <h2 className="text-xl font-semibold tracking-tight">Formation</h2>
-      <p className="mt-1 text-sm text-dim">Look up the carriage formation of a train.</p>
+      <PageHeading
+        index="05"
+        label="Formation"
+        title="Formation"
+        subtitle="Look up the carriage formation of a train."
+      />
 
       <div className="mt-4 space-y-4">
         <Field label="Find by station (optional)">

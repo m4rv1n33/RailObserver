@@ -10,12 +10,19 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
+      workbox: {
+        // The default patterns skip fonts, and the self-hosted faces have to
+        // be cached for the app to look right offline. Only the latin subsets
+        // are ever requested, so the other unicode ranges stay out of the
+        // precache.
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}', '**/*latin*.woff2'],
+      },
       manifest: {
         name: 'RailObserver',
         short_name: 'RailObserver',
         description: 'Personal Swiss rail vehicle observation platform',
-        theme_color: '#ffffff',
-        background_color: '#ffffff',
+        theme_color: '#fafafa',
+        background_color: '#fafafa',
         display: 'standalone',
         icons: [
           {

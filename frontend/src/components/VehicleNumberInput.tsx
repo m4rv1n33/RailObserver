@@ -33,7 +33,7 @@ export function VehicleNumberInput({
           {numbers.map((number, index) => (
             <li
               key={`${number}-${index}`}
-              className="flex items-center gap-1.5 rounded border border-accent/30 bg-accent-soft px-2.5 py-1 font-num text-sm text-accent"
+              className="flex items-center gap-1.5 border border-accent/40 bg-accent-soft px-2.5 py-1 font-num text-sm text-accent"
             >
               {number}
               <button
@@ -57,13 +57,13 @@ export function VehicleNumberInput({
           onChange={(event) => onInputChange(event.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Vehicle number"
-          className="flex-1 rounded border border-line bg-surface px-3 py-3 font-num text-lg text-fg placeholder:font-sans placeholder:text-faint transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-soft"
+          className="flex-1 rounded-md border border-line bg-surface px-3 py-3 font-num text-lg text-fg placeholder:font-sans placeholder:text-faint transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-soft"
         />
         <button
           type="button"
           onClick={onAdd}
           disabled={!input.trim()}
-          className="rounded border border-line px-4 text-lg font-medium text-dim transition-colors hover:bg-subtle hover:text-fg disabled:opacity-40"
+          className="rounded-md border border-line px-4 text-lg font-medium text-dim transition-colors hover:bg-subtle hover:text-fg disabled:opacity-40"
         >
           +
         </button>

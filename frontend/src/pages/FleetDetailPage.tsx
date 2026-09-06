@@ -29,7 +29,7 @@ export function FleetDetailPage() {
 
       {fleet && (
         <>
-          <h2 className="mt-2 text-lg font-semibold">{fleet.name}</h2>
+          <h2 className="mt-3 text-2xl font-bold tracking-tight">{fleet.name}</h2>
           {fleet.family && <p className="mt-1 text-sm text-dim">{fleet.family}</p>}
           <p className="mt-1 text-sm text-dim">
             Seen {fleet.seenCount}
@@ -37,9 +37,9 @@ export function FleetDetailPage() {
             {fleet.fleetSize !== null ? ` (${fleet.missingCount} missing)` : ''}
           </p>
           {fleet.fleetSize !== null && (
-            <div className="mt-2 h-2 rounded bg-subtle">
+            <div className="mt-2 h-2 bg-subtle">
               <div
-                className="h-2 rounded bg-accent"
+                className="h-2 bg-accent"
                 style={{ width: `${Math.min(fleet.seenCount / fleet.fleetSize, 1) * 100}%` }}
               />
             </div>

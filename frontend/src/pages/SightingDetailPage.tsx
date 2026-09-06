@@ -37,7 +37,7 @@ export function SightingDetailPage() {
 
       {sighting && (
         <>
-          <h2 className="mt-2 text-lg font-semibold">
+          <h2 className="mt-3 text-2xl font-bold tracking-tight">
             {new Date(sighting.observedAt).toLocaleString()}
           </h2>
           {(sighting.station || sighting.direction) && (
