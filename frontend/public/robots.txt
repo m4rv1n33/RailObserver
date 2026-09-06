@@ -1,0 +1,4 @@
+# Personal single-user instance. Nothing here is meant to be indexed, and
+# everything behind /api requires a session anyway.
+User-agent: *
+Disallow: /

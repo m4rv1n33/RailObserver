@@ -189,6 +189,48 @@ include stack traces by default, so this is a consistency and information
 tidiness issue rather than a disclosure one, but the defaults should be set
 explicitly rather than assumed. Covered as a task in PRODUCTION.md.
 
+## Discoverability
+
+Separate from access control: not being found in the first place. A SPA behind
+auth only ever serves crawlers the lock screen, since `index.html` is returned
+for every route and `/api` answers 401, so the exposure is narrow. It is still
+"this instance exists, at this hostname, running this software", which is
+exactly what an untargeted scanner wants.
+
+Three layers, in increasing order of how much they actually help.
+
+**`robots.txt` and `noindex`.** Both are in the repository now:
+`frontend/public/robots.txt` disallows everything and `index.html` carries
+`<meta name="robots" content="noindex, nofollow">`. This is advisory. Well
+behaved crawlers honour it, and nothing else does. Never list a path in
+`robots.txt` to hide it, since the file is public and doing so advertises the
+path to exactly the readers who ignore the directive.
+
+**`X-Robots-Tag` at the proxy.** Stronger than the meta tag because it covers
+every response, not just HTML, including the manifest and the API. One line
+alongside the other headers:
+
+```
+header X-Robots-Tag "noindex, nofollow, noarchive"
+```
+
+**Certificate Transparency.** This is the one that matters, and no amount of
+`robots.txt` touches it. Requesting a Let's Encrypt certificate for
+`railobserver.example.ch` publishes that hostname to public CT logs within
+minutes. Those logs are streamed and scanned continuously, so a fresh subdomain
+gets probed within hours of its first certificate, whether or not anything links
+to it. Obscurity through an unguessable hostname does not survive the first
+certificate issuance.
+
+If the hostname should stay private, use a DNS-01 wildcard certificate for
+`*.example.ch` so the specific subdomain never appears in a log, or terminate
+TLS with an internal CA. Both are more work than they are worth if the instance
+sits behind a VPN, which is the point below.
+
+None of this is a security control. It reduces how often the instance is found
+and probed; it does nothing about what happens once it is. Treat it as hygiene
+layered on top of the checklist below, never as a substitute for any item in it.
+
 ## Hardening checklist
 
 Before the instance is reachable from outside the LAN:
@@ -204,6 +246,8 @@ Before the instance is reachable from outside the LAN:
       breaks login
 - [ ] Upgrade Spring Boot from 3.5.0 to the current 3.5.x patch
 - [ ] Verify a backup restores, since a compromise is recovered by restoring one
+- [ ] Add `X-Robots-Tag` at the proxy, and decide whether the hostname can
+      tolerate appearing in public Certificate Transparency logs
 
 Consider whether the instance needs to be internet-facing at all. Behind
 Tailscale or WireGuard, most of the list above drops from necessary to prudent,
