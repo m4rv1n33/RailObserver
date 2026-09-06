@@ -14,48 +14,51 @@ function formatTime(value: string | null): string {
 }
 
 export function DepartureLookup({ station, when, onSelect }: DepartureLookupProps) {
-  const [departures, setDepartures] = useState<DepartureResponse[] | null>(null)
-  const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle')
+  // A result carries the query it was fetched for. Comparing that against the
+  // current query during render replaces clearing the state from the effect,
+  // and makes showing the previous station's board impossible.
+  const [result, setResult] = useState<{ key: string; departures: DepartureResponse[] | null } | null>(
+    null,
+  )
+
+  const trimmed = station.trim()
+  const key = `${trimmed}|${when ?? ''}`
 
   useEffect(() => {
-    const trimmed = station.trim()
-    if (!trimmed) {
-      setDepartures(null)
-      setStatus('idle')
-      return
-    }
+    if (!trimmed) return
     let cancelled = false
-    setStatus('loading')
     getDepartures(trimmed, 8, when)
-      .then((result) => {
-        if (!cancelled) {
-          setDepartures(result)
-          setStatus('idle')
-        }
+      .then((departures) => {
+        if (!cancelled) setResult({ key, departures })
       })
       .catch(() => {
-        if (!cancelled) setStatus('error')
+        if (!cancelled) setResult({ key, departures: null })
       })
     return () => {
       cancelled = true
     }
-  }, [station, when])
+  }, [trimmed, when, key])
 
-  if (!station.trim()) {
+  if (!trimmed) {
     return <p className="text-sm text-dim">Pick a station to list its departures.</p>
   }
 
+  const current = result !== null && result.key === key ? result : null
+  const departures = current?.departures ?? null
+
   return (
     <div className="space-y-2">
-      {status === 'loading' && <p className="text-sm text-dim">Loading departures...</p>}
-      {status === 'error' && <p className="text-sm text-danger">Could not load departures.</p>}
+      {current === null && <p className="text-sm text-dim">Loading departures...</p>}
+      {current !== null && departures === null && (
+        <p className="text-sm text-danger">Could not load departures.</p>
+      )}
 
-      {status === 'idle' && departures !== null && departures.length === 0 && (
+      {departures !== null && departures.length === 0 && (
         <p className="text-sm text-dim">No departures around this time.</p>
       )}
 
       {departures !== null && departures.length > 0 && (
-        <ul className="max-h-64 divide-y divide-line overflow-y-auto rounded-md border border-line">
+        <ul className="max-h-64 divide-y divide-line overflow-y-auto border border-line">
           {departures.map((departure, index) => (
             <li key={index}>
               <button

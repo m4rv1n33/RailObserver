@@ -11,9 +11,15 @@ interface StationAutocompleteProps {
 }
 
 export function StationAutocomplete({ value, onChange, onSelect, placeholder }: StationAutocompleteProps) {
-  const [suggestions, setSuggestions] = useState<StationResponse[]>([])
+  const [result, setResult] = useState<StationResponse[] | null>(null)
   const [open, setOpen] = useState(false)
   const skipNextQuery = useRef(false)
+
+  const trimmed = value.trim()
+  // Derived rather than cleared from the effect. Too short a query hides the
+  // list; otherwise the last result stays up while the next one is in flight,
+  // so the dropdown does not flicker on every keystroke.
+  const suggestions = trimmed.length < 2 ? [] : (result ?? [])
 
   useEffect(() => {
     // Picking a suggestion sets the value to the station name; don't immediately
@@ -22,35 +28,32 @@ export function StationAutocomplete({ value, onChange, onSelect, placeholder }: 
       skipNextQuery.current = false
       return
     }
-    const trimmed = value.trim()
-    if (trimmed.length < 2) {
-      setSuggestions([])
-      return
-    }
+    if (trimmed.length < 2) return
+
     let cancelled = false
     const timeout = setTimeout(() => {
       getStations(trimmed)
-        .then((result) => {
+        .then((stations) => {
           if (!cancelled) {
-            setSuggestions(result)
+            setResult(stations)
             setOpen(true)
           }
         })
         .catch(() => {
-          if (!cancelled) setSuggestions([])
+          if (!cancelled) setResult([])
         })
     }, 300)
     return () => {
       cancelled = true
       clearTimeout(timeout)
     }
-  }, [value])
+  }, [trimmed])
 
   function select(station: StationResponse) {
     skipNextQuery.current = true
     onChange(station.name)
     onSelect?.(station)
-    setSuggestions([])
+    setResult(null)
     setOpen(false)
   }
 
