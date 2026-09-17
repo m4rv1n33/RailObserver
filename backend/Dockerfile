@@ -2,7 +2,10 @@ FROM eclipse-temurin:21-jdk AS build
 WORKDIR /build
 COPY .mvn/ .mvn/
 COPY mvnw pom.xml ./
-RUN ./mvnw -B dependency:go-offline
+# The wrapper is executable in git, but a checkout that drops the mode bit (a
+# zip export, or a clone with core.fileMode off) otherwise fails here with a
+# bare exit 126, which says nothing about why.
+RUN chmod +x mvnw && ./mvnw -B dependency:go-offline
 COPY src/ src/
 RUN ./mvnw -B clean package -DskipTests
 

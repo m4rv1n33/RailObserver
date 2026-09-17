@@ -15,6 +15,9 @@ jobs:
       contents: read
       packages: write
     strategy:
+      # The two images are independent, so one failing should not cancel the
+      # other and hide whether it would have built.
+      fail-fast: false
       matrix:
         include:
           - component: backend
