@@ -23,6 +23,14 @@ spring:
     open-in-view: false
   flyway:
     locations: classpath:db/migration
+  http:
+    # Applies to every RestClient built from the injected builder, which is
+    # both transport providers. A hung upstream otherwise holds a Tomcat worker
+    # until the connection dies on its own, and station autocomplete calls one
+    # of them on nearly every keystroke.
+    client:
+      connect-timeout: 3s
+      read-timeout: 8s
 
 railobserver:
   auth:
