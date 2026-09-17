@@ -1,0 +1,13 @@
+:8080 {
+    handle /api/* {
+        reverse_proxy backend:8080
+    }
+    handle {
+        root * /srv
+        try_files {path} /index.html
+        file_server
+    }
+    header /sw.js Cache-Control "no-cache"
+    header /registerSW.js Cache-Control "no-cache"
+    encode gzip zstd
+}
