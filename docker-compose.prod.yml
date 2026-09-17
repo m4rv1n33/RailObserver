@@ -1,0 +1,90 @@
+# Production stack for the homelab. The development file next to this one stays
+# as it is: it publishes Postgres to the host and hardcodes its credentials,
+# which is convenient locally and wrong on a machine that runs other things.
+#
+# Both deployments run from this one file on the same host, separated by the
+# compose project name and the .env beside it:
+#
+#   docker compose -p railobserver-prod --env-file prod/.env -f docker-compose.prod.yml up -d
+#
+# See .env.example for the variables it expects.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    # No ports mapping on purpose. Postgres is reachable on the compose network
+    # and nowhere else, so nothing on the LAN can go around the application and
+    # its auth to reach the data.
+    environment:
+      POSTGRES_DB: railobserver
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d railobserver"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    mem_limit: 512m
+
+  backend:
+    image: ghcr.io/m4rv1n33/railobserver-backend:${TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        # Flyway runs on startup, so the backend must not reach a database that
+        # is still initialising.
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: jdbc:postgresql://postgres:5432/railobserver
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      OTD_API_TOKEN: ${OTD_API_TOKEN}
+      RAILOBSERVER_AUTH_PIN: ${RAILOBSERVER_AUTH_PIN}
+      RAILOBSERVER_AUTH_SECRET: ${RAILOBSERVER_AUTH_SECRET}
+      RAILOBSERVER_AUTH_COOKIE_SECURE: "true"
+      SERVER_NAME: ${SERVER_NAME}
+      ENVIRONMENT: ${ENVIRONMENT}
+    mem_limit: 1g
+
+  web:
+    image: ghcr.io/m4rv1n33/railobserver-frontend:${TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    # Bound to the loopback interface, so the only way in is the Cloudflare
+    # Tunnel on this host. Publishing on 0.0.0.0 would expose the app to the
+    # whole LAN over plain http, which the tunnel then makes pointless.
+    ports:
+      - "127.0.0.1:${WEB_PORT}:8080"
+    mem_limit: 128m
+
+  backup:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: ${DB_PASSWORD}
+    volumes:
+      # A bind mount to a host directory, deliberately not the postgres-data
+      # volume: `docker compose down -v` removes named volumes, and a backup
+      # that dies with the thing it is backing up is not one.
+      - ./backups:/backups
+    # pipefail makes the pipeline report pg_dump's failure rather than gzip's
+    # success, and the || arm is what that buys: without it the status is
+    # discarded by the next command and a failed dump still leaves a valid,
+    # correctly named, empty archive behind, so the directory looks healthy
+    # while holding nothing. On one line because the folded multi-line form
+    # puts a newline before the | gzip continuation, which is a syntax error.
+    entrypoint: >
+      sh -c 'set -o pipefail; while true; do f=/backups/railobserver-$$(date +%Y%m%d-%H%M).sql.gz; pg_dump -h postgres -U ${DB_USERNAME} railobserver | gzip > "$$f" || { echo "backup failed, removing $$f" >&2; rm -f "$$f"; }; find /backups -name "railobserver-*.sql.gz" -mtime +30 -delete; sleep 86400; done'
+    mem_limit: 256m
+
+volumes:
+  postgres-data:

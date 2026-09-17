@@ -1,0 +1,8 @@
+# Files a Linux container or a CI runner reads. CRLF in one of these is a class
+# of failure that only shows up on the server, so pin them rather than leaving
+# them to core.autocrlf.
+Dockerfile text eol=lf
+.dockerignore text eol=lf
+Caddyfile text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf

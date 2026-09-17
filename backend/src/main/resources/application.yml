@@ -1,3 +1,15 @@
+server:
+  # Behind a reverse proxy the socket address is the proxy, so the real client
+  # address has to come from X-Forwarded-For. Tomcat rewrites it only for
+  # requests that arrived from one of the proxies below, which is the
+  # Docker-internal range; a header sent by anything else is ignored. Without
+  # that restriction the login lockout is keyed on a value the caller supplies
+  # and throttles nobody.
+  forward-headers-strategy: native
+  tomcat:
+    remoteip:
+      internal-proxies: 172\.1[6-9]\..*|172\.2[0-9]\..*|172\.3[01]\..*
+
 spring:
   application:
     name: railobserver
@@ -11,6 +23,14 @@ spring:
     open-in-view: false
   flyway:
     locations: classpath:db/migration
+  http:
+    # Applies to every RestClient built from the injected builder, which is
+    # both transport providers. A hung upstream otherwise holds a Tomcat worker
+    # until the connection dies on its own, and station autocomplete calls one
+    # of them on nearly every keystroke.
+    client:
+      connect-timeout: 3s
+      read-timeout: 8s
 
 railobserver:
   auth:
@@ -25,6 +45,13 @@ railobserver:
     cookie-secure: ${RAILOBSERVER_AUTH_COOKIE_SECURE:true}
     max-attempts: 5
     lockout-minutes: 15
+  meta:
+    # Which machine and which environment this instance is. Both deployments run
+    # on the same host and differ only by compose project and .env, so nothing
+    # else tells them apart. Unset means the app shows no such line, which is
+    # what local development wants.
+    server-name: ${SERVER_NAME:}
+    environment: ${ENVIRONMENT:}
   formation:
     # opentransportdata.swiss Train Formation API. Token comes from the
     # OTD_API_TOKEN environment variable or backend/.env (see .env.example);

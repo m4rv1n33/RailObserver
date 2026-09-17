@@ -47,11 +47,11 @@ public class AuthController {
         return authenticated ? ResponseEntity.ok(body) : ResponseEntity.status(401).body(body);
     }
 
+    // The key the lockout counts against, so it must not be something the caller
+    // can choose. Tomcat has already replaced the remote address with the
+    // forwarded one for requests that came through a trusted proxy, and left it
+    // alone for everything else; see server.tomcat.remoteip in application.yml.
     private String clientOf(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        if (forwarded != null && !forwarded.isBlank()) {
-            return forwarded.split(",")[0].strip();
-        }
         return request.getRemoteAddr();
     }
 }

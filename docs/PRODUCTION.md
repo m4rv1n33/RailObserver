@@ -6,8 +6,9 @@ document, [SECURITY.md](SECURITY.md); this one covers packaging, deployment,
 data safety and operations.
 
 The application code itself is in good shape. Almost everything below is about
-the layer around it, which currently does not exist: there is no container
-image, no production compose file, no reverse proxy, no backup and no CI.
+the layer around it. Images, a production compose file, the proxy, the build
+pipeline and a nightly dump now exist. What is left on the backup is the half
+that makes it a backup: restoring one, and getting a copy off the machine.
 
 ## Where things stand
 
@@ -18,10 +19,10 @@ image, no production compose file, no reverse proxy, no backup and no CI.
 | Configuration | Environment variables, optional `backend/.env` via `DotenvEnvironmentPostProcessor` |
 | Authentication | Shared PIN, HMAC session cookie, works, see SECURITY.md |
 | Frontend build | Vite, static `dist/`, PWA with precaching |
-| Containers | Postgres only, and the compose file is development-shaped |
-| Images | None. No Dockerfile anywhere in the repository |
-| CI | None. `.github/` holds only a modernize helper |
-| Backups | None |
+| Containers | `docker-compose.yml` for development, `docker-compose.prod.yml` for the homelab |
+| Images | `backend/Dockerfile` and `frontend/Dockerfile`, pushed to GHCR |
+| CI | `.github/workflows/build.yml` builds and pushes both images on every push to main. No test workflow yet |
+| Backups | Nightly `pg_dump` to a host bind mount, 30 day window. Never restored, and no copy off the machine |
 | Health checks | None. Actuator is not on the classpath |
 | Tests | 8 test classes, backend only, no frontend tests |
 
@@ -30,39 +31,43 @@ image, no production compose file, no reverse proxy, no backup and no CI.
 These are the items that make the difference between "runs on my laptop" and
 "runs unattended on a box I trust with my data".
 
-### 1. There is no backup
+### 1. Backup - half done
 
-This is the highest-priority item on the page. The sighting log is
-irreplaceable: it cannot be re-derived from any external source, unlike the
-fleet rosters and the transport API data. A disk failure or a bad `docker
-compose down -v` loses all of it permanently.
+The sighting log is irreplaceable: it cannot be re-derived from any external
+source, unlike the fleet rosters and the transport API data. A disk failure or
+a bad `docker compose down -v` loses all of it permanently.
 
-Minimum viable setup is a nightly `pg_dump` to a directory outside the Docker
-volume, kept for a rolling window, with at least one copy off the machine.
+`docker-compose.prod.yml` now runs a `backup` service: a nightly `pg_dump`
+piped through gzip into `./backups`, with dumps older than 30 days deleted.
+`./backups` is a bind mount to a host directory rather than a named volume,
+which is the point of it: `down -v` removes named volumes, and a backup that
+dies alongside the thing it backs up is not one.
 
-```yaml
-  backup:
-    image: postgres:16-alpine
-    depends_on: [postgres]
-    environment:
-      PGPASSWORD: ${DB_PASSWORD}
-    volumes:
-      - ./backups:/backups
-    entrypoint: >
-      sh -c 'while true; do
-        pg_dump -h postgres -U railobserver railobserver
-          | gzip > /backups/railobserver-$$(date +%%Y%%m%%d-%%H%%M).sql.gz;
-        find /backups -name "railobserver-*.sql.gz" -mtime +30 -delete;
-        sleep 86400;
-      done'
-```
+Two things are still missing, and they are the two that decide whether this
+counts:
 
-A backup you have never restored is not a backup. Verify once by restoring a
-dump into a scratch database and pointing a local backend at it.
+- **No copy leaves the machine.** A host that dies takes the database and its
+  backups with it. Copy the directory somewhere else on a schedule.
+- **No restore has been tried.** A backup you have never restored is not a
+  backup. Verify once by restoring a dump into a scratch database and pointing
+  a local backend at it.
 
-### 2. There are no images to deploy
+A failed dump leaves nothing behind. A shell pipeline normally reports the exit
+status of its last command, so `pg_dump ... | gzip > file` reports gzip's
+success and a failed dump would leave a valid, empty, correctly named `.gz`,
+which is worse than an obvious absence because the directory then looks
+healthy. The entrypoint sets `pipefail` so the pipeline reports `pg_dump`
+instead, and deletes the half-written archive when it does. `pipefail` alone
+would not have been enough: the status is discarded by the next command in the
+loop, so the empty file would have survived anyway.
 
-Both halves need a Dockerfile. The backend as a layered Spring Boot image:
+The failure is announced on stderr and therefore in `docker logs`. Nothing
+alerts on it, so a run of failed nights is still only visible by looking, which
+is the third reason the restore check below matters.
+
+### 2. Images - done
+
+Both halves have a Dockerfile. The backend as a layered Spring Boot image:
 
 ```dockerfile
 # backend/Dockerfile
@@ -85,7 +90,9 @@ ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75", "-jar", "app.jar"]
 
 The frontend builds to static files, so the runtime stage is just a web server.
 Serving it from the same origin as the API is not optional: the session cookie
-is `SameSite=Lax`, so a split-origin deployment silently breaks login.
+is `SameSite=Lax`, so a split-origin deployment silently breaks login. Caddy
+handles both from one origin; `frontend/Caddyfile` proxies `/api/*` to the
+backend and serves everything else from `dist/`.
 
 ```dockerfile
 # frontend/Dockerfile
@@ -101,33 +108,57 @@ COPY --from=build /build/dist /srv
 COPY Caddyfile /etc/caddy/Caddyfile
 ```
 
-### 3. The compose file is development-shaped
+### 3. The compose file is development-shaped - done
 
-`docker-compose.yml` today publishes Postgres on `5432` to the host and uses
-`railobserver` as both user and password, committed to the repository. For the
-homelab, split it: keep the current file for local work, and add a
-`docker-compose.prod.yml` that
+`docker-compose.yml` still publishes Postgres on `5432` and uses `railobserver`
+as both user and password, which is what makes it convenient locally. It is no
+longer the file the homelab runs. `docker-compose.prod.yml` sits beside it and
 
 - drops the `ports:` mapping on Postgres so only the compose network reaches it,
-- reads every credential from the environment rather than literals,
+- reads every credential from the environment (see `.env.example`),
 - sets `restart: unless-stopped` on each service,
-- adds a `healthcheck` to Postgres and to the backend,
-- pins image tags by digest or at least by patch version.
+- adds a `pg_isready` healthcheck to Postgres, which the backend waits on,
+- publishes the frontend on `127.0.0.1` only, so the tunnel is the only way in,
+- selects the image tag with `TAG`, defaulting to `latest`.
 
-### 4. Nothing terminates TLS
+One item from that list is **deliberately deferred**: there is no healthcheck on
+the backend. Actuator is not on the classpath, so there is nothing to poll, and
+adding it drags in the question of which port it binds and whether it lands
+outside the auth boundary. `depends_on` already orders the backend behind a
+healthy Postgres, which is the ordering that actually matters here because
+Flyway runs at startup. See "Add a health endpoint" below for when this is
+picked up.
+
+Both environments run from this one file on the same host, separated by the
+compose project name and which `.env` is passed:
+
+```
+docker compose -p railobserver-prod --env-file prod/.env -f docker-compose.prod.yml up -d
+```
+
+Give each environment its own `WEB_PORT` and its own
+`RAILOBSERVER_AUTH_SECRET`, and set `SERVER_NAME` and `ENVIRONMENT` in both, or
+the running app cannot tell you which of the two you have open.
+
+### 4. Nothing terminates TLS - done at the tunnel, not in the repository
 
 `railobserver.auth.cookie-secure` defaults to `true`, which means the browser
 refuses to store the session cookie over plain HTTP. Reaching the app at
 `http://homelab:8080` therefore produces a login that appears to succeed and
 then immediately bounces back to the lock screen.
 
-Put Caddy or Traefik in front, terminate TLS there, and proxy `/api` to the
-backend and everything else to the static files. Caddy gets a certificate from
-Let's Encrypt automatically for a real hostname, or you can use its internal CA
-for a LAN-only name.
+TLS is terminated by the Cloudflare Tunnel on the host, not by Caddy, so
+`frontend/Caddyfile` listens on plain `:8080` and requests no certificate. That
+is why `docker-compose.prod.yml` publishes the frontend on `127.0.0.1` only:
+the plain-HTTP port must not be reachable from the LAN, and the tunnel is the
+single way in. The certificate, the hostname and the Let's Encrypt handling are
+all Cloudflare's side and live in no file here.
+
+Caddy still does the part that matters to the cookie, which is keeping the API
+and the app on one origin:
 
 ```
-railobserver.example.ch {
+:8080 {
     handle /api/* {
         reverse_proxy backend:8080
     }
@@ -139,18 +170,28 @@ railobserver.example.ch {
 }
 ```
 
+Two things follow from the tunnel being in front. The forwarded-header
+configuration in SECURITY.md trusts only the Docker-internal range, which is
+the Caddy container, so the client address the lockout counts is the one Caddy
+was told by the tunnel. And the response headers split in two: the Caddyfile
+now sets the ones this container can meaningfully assert about its own
+responses, while `Strict-Transport-Security` and the CSP belong at the
+Cloudflare edge, since this container only ever speaks plain HTTP and an HSTS
+header asserted over it says nothing.
+
 Do not set `RAILOBSERVER_AUTH_COOKIE_SECURE=false` as a workaround. That sends
 the session cookie in the clear on every request.
 
-### 5. Outbound HTTP calls have no timeout
+### 5. Outbound HTTP calls have no timeout - done
 
 `OpendataChProvider` and `OtdFormationProvider` build their `RestClient` from
-the injected builder without configuring timeouts, so a hung upstream ties up a
-Tomcat worker thread until the connection dies on its own. Two slow endpoints,
-`transport.opendata.ch` and `api.opentransportdata.swiss`, are reachable from
-user-facing requests: station autocomplete fires on nearly every keystroke.
+the injected builder, which had no timeouts configured, so a hung upstream tied
+up a Tomcat worker thread until the connection died on its own. Two slow
+endpoints, `transport.opendata.ch` and `api.opentransportdata.swiss`, are
+reachable from user-facing requests: station autocomplete fires on nearly every
+keystroke.
 
-Fix it globally in `application.yml`:
+Fixed globally in `application.yml`:
 
 ```yaml
 spring:
@@ -225,10 +266,10 @@ Add pagination or at least a bounded default with a date filter. The index
 Once the pieces above exist, a deploy looks like this. Flyway runs migrations on
 startup, so ordering matters.
 
-1. Take a backup of the current database, or verify last night's ran.
-2. Build and tag both images.
-3. `docker compose -f docker-compose.prod.yml up -d postgres` and wait for the
-   healthcheck to pass.
+1. Verify last night's dump landed in `./backups` and is not zero-length.
+2. Push to `main` and let the build workflow publish both images, or pick an
+   existing `sha-<commit>` tag. Then `docker compose ... pull`.
+3. `docker compose ... up -d postgres` and wait for the healthcheck to pass.
 4. Bring up the backend. Flyway applies any pending migrations here. Watch the
    log for the migration summary before continuing.
 5. Bring up the frontend and the proxy.

@@ -1,0 +1,23 @@
+:8080 {
+    handle /api/* {
+        reverse_proxy backend:8080
+    }
+    handle {
+        root * /srv
+        try_files {path} /index.html
+        file_server
+    }
+    header /sw.js Cache-Control "no-cache"
+    header /registerSW.js Cache-Control "no-cache"
+    # Strict-Transport-Security and a Content-Security-Policy are deliberately
+    # absent: TLS terminates at the Cloudflare edge and this container only ever
+    # speaks plain HTTP, so those two belong upstream. What is here is what this
+    # container can meaningfully assert about its own responses.
+    header {
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "no-referrer"
+        Permissions-Policy "geolocation=(self), camera=(), microphone=()"
+        X-Robots-Tag "noindex, nofollow, noarchive"
+    }
+    encode gzip zstd
+}
