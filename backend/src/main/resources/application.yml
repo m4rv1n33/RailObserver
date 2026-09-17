@@ -1,3 +1,15 @@
+server:
+  # Behind a reverse proxy the socket address is the proxy, so the real client
+  # address has to come from X-Forwarded-For. Tomcat rewrites it only for
+  # requests that arrived from one of the proxies below, which is the
+  # Docker-internal range; a header sent by anything else is ignored. Without
+  # that restriction the login lockout is keyed on a value the caller supplies
+  # and throttles nobody.
+  forward-headers-strategy: native
+  tomcat:
+    remoteip:
+      internal-proxies: 172\.1[6-9]\..*|172\.2[0-9]\..*|172\.3[01]\..*
+
 spring:
   application:
     name: railobserver
