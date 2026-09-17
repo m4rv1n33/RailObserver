@@ -6,8 +6,8 @@ document, [SECURITY.md](SECURITY.md); this one covers packaging, deployment,
 data safety and operations.
 
 The application code itself is in good shape. Almost everything below is about
-the layer around it, which currently does not exist: there is no container
-image, no production compose file, no reverse proxy, no backup and no CI.
+the layer around it. Images, a production compose file, the proxy and the build
+pipeline now exist; backup is still the one that matters and still does not.
 
 ## Where things stand
 
@@ -18,9 +18,9 @@ image, no production compose file, no reverse proxy, no backup and no CI.
 | Configuration | Environment variables, optional `backend/.env` via `DotenvEnvironmentPostProcessor` |
 | Authentication | Shared PIN, HMAC session cookie, works, see SECURITY.md |
 | Frontend build | Vite, static `dist/`, PWA with precaching |
-| Containers | Postgres only, and the compose file is development-shaped |
-| Images | None. No Dockerfile anywhere in the repository |
-| CI | None. `.github/` holds only a modernize helper |
+| Containers | `docker-compose.yml` for development, `docker-compose.prod.yml` for the homelab |
+| Images | `backend/Dockerfile` and `frontend/Dockerfile`, pushed to GHCR |
+| CI | `.github/workflows/build.yml` builds and pushes both images on every push to main. No test workflow yet |
 | Backups | None |
 | Health checks | None. Actuator is not on the classpath |
 | Tests | 8 test classes, backend only, no frontend tests |
@@ -60,9 +60,9 @@ volume, kept for a rolling window, with at least one copy off the machine.
 A backup you have never restored is not a backup. Verify once by restoring a
 dump into a scratch database and pointing a local backend at it.
 
-### 2. There are no images to deploy
+### 2. Images - done
 
-Both halves need a Dockerfile. The backend as a layered Spring Boot image:
+Both halves have a Dockerfile. The backend as a layered Spring Boot image:
 
 ```dockerfile
 # backend/Dockerfile
@@ -85,7 +85,9 @@ ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75", "-jar", "app.jar"]
 
 The frontend builds to static files, so the runtime stage is just a web server.
 Serving it from the same origin as the API is not optional: the session cookie
-is `SameSite=Lax`, so a split-origin deployment silently breaks login.
+is `SameSite=Lax`, so a split-origin deployment silently breaks login. Caddy
+handles both from one origin; `frontend/Caddyfile` proxies `/api/*` to the
+backend and serves everything else from `dist/`.
 
 ```dockerfile
 # frontend/Dockerfile
@@ -101,33 +103,53 @@ COPY --from=build /build/dist /srv
 COPY Caddyfile /etc/caddy/Caddyfile
 ```
 
-### 3. The compose file is development-shaped
+### 3. The compose file is development-shaped - done
 
-`docker-compose.yml` today publishes Postgres on `5432` to the host and uses
-`railobserver` as both user and password, committed to the repository. For the
-homelab, split it: keep the current file for local work, and add a
-`docker-compose.prod.yml` that
+`docker-compose.yml` still publishes Postgres on `5432` and uses `railobserver`
+as both user and password, which is what makes it convenient locally. It is no
+longer the file the homelab runs. `docker-compose.prod.yml` sits beside it and
 
 - drops the `ports:` mapping on Postgres so only the compose network reaches it,
-- reads every credential from the environment rather than literals,
+- reads every credential from the environment (see `.env.example`),
 - sets `restart: unless-stopped` on each service,
-- adds a `healthcheck` to Postgres and to the backend,
-- pins image tags by digest or at least by patch version.
+- adds a `pg_isready` healthcheck to Postgres, which the backend waits on,
+- publishes the frontend on `127.0.0.1` only, so the tunnel is the only way in,
+- selects the image tag with `TAG`, defaulting to `latest`.
 
-### 4. Nothing terminates TLS
+One item from that list is not done: there is **no healthcheck on the backend**,
+because Actuator is not on the classpath and there is nothing to poll. See
+"Add a health endpoint" below.
+
+Both environments run from this one file on the same host, separated by the
+compose project name and which `.env` is passed:
+
+```
+docker compose -p railobserver-prod --env-file prod/.env -f docker-compose.prod.yml up -d
+```
+
+Give each environment its own `WEB_PORT` and its own
+`RAILOBSERVER_AUTH_SECRET`, and set `SERVER_NAME` and `ENVIRONMENT` in both, or
+the running app cannot tell you which of the two you have open.
+
+### 4. Nothing terminates TLS - done at the tunnel, not in the repository
 
 `railobserver.auth.cookie-secure` defaults to `true`, which means the browser
 refuses to store the session cookie over plain HTTP. Reaching the app at
 `http://homelab:8080` therefore produces a login that appears to succeed and
 then immediately bounces back to the lock screen.
 
-Put Caddy or Traefik in front, terminate TLS there, and proxy `/api` to the
-backend and everything else to the static files. Caddy gets a certificate from
-Let's Encrypt automatically for a real hostname, or you can use its internal CA
-for a LAN-only name.
+TLS is terminated by the Cloudflare Tunnel on the host, not by Caddy, so
+`frontend/Caddyfile` listens on plain `:8080` and requests no certificate. That
+is why `docker-compose.prod.yml` publishes the frontend on `127.0.0.1` only:
+the plain-HTTP port must not be reachable from the LAN, and the tunnel is the
+single way in. The certificate, the hostname and the Let's Encrypt handling are
+all Cloudflare's side and live in no file here.
+
+Caddy still does the part that matters to the cookie, which is keeping the API
+and the app on one origin:
 
 ```
-railobserver.example.ch {
+:8080 {
     handle /api/* {
         reverse_proxy backend:8080
     }
@@ -139,18 +161,26 @@ railobserver.example.ch {
 }
 ```
 
+Two things follow from the tunnel being in front. The forwarded-header
+configuration in SECURITY.md trusts only the Docker-internal range, which is
+the Caddy container, so the client address the lockout counts is the one Caddy
+was told by the tunnel. And the response headers and CSP that SECURITY.md lists
+under "no security response headers" are still not set anywhere: they were
+going to go on the proxy, and the Caddyfile does not carry them yet.
+
 Do not set `RAILOBSERVER_AUTH_COOKIE_SECURE=false` as a workaround. That sends
 the session cookie in the clear on every request.
 
-### 5. Outbound HTTP calls have no timeout
+### 5. Outbound HTTP calls have no timeout - done
 
 `OpendataChProvider` and `OtdFormationProvider` build their `RestClient` from
-the injected builder without configuring timeouts, so a hung upstream ties up a
-Tomcat worker thread until the connection dies on its own. Two slow endpoints,
-`transport.opendata.ch` and `api.opentransportdata.swiss`, are reachable from
-user-facing requests: station autocomplete fires on nearly every keystroke.
+the injected builder, which had no timeouts configured, so a hung upstream tied
+up a Tomcat worker thread until the connection died on its own. Two slow
+endpoints, `transport.opendata.ch` and `api.opentransportdata.swiss`, are
+reachable from user-facing requests: station autocomplete fires on nearly every
+keystroke.
 
-Fix it globally in `application.yml`:
+Fixed globally in `application.yml`:
 
 ```yaml
 spring:
@@ -226,9 +256,9 @@ Once the pieces above exist, a deploy looks like this. Flyway runs migrations on
 startup, so ordering matters.
 
 1. Take a backup of the current database, or verify last night's ran.
-2. Build and tag both images.
-3. `docker compose -f docker-compose.prod.yml up -d postgres` and wait for the
-   healthcheck to pass.
+2. Push to `main` and let the build workflow publish both images, or pick an
+   existing `sha-<commit>` tag. Then `docker compose ... pull`.
+3. `docker compose ... up -d postgres` and wait for the healthcheck to pass.
 4. Bring up the backend. Flyway applies any pending migrations here. Watch the
    log for the migration summary before continuing.
 5. Bring up the frontend and the proxy.
