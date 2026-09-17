@@ -115,9 +115,13 @@ longer the file the homelab runs. `docker-compose.prod.yml` sits beside it and
 - publishes the frontend on `127.0.0.1` only, so the tunnel is the only way in,
 - selects the image tag with `TAG`, defaulting to `latest`.
 
-One item from that list is not done: there is **no healthcheck on the backend**,
-because Actuator is not on the classpath and there is nothing to poll. See
-"Add a health endpoint" below.
+One item from that list is **deliberately deferred**: there is no healthcheck on
+the backend. Actuator is not on the classpath, so there is nothing to poll, and
+adding it drags in the question of which port it binds and whether it lands
+outside the auth boundary. `depends_on` already orders the backend behind a
+healthy Postgres, which is the ordering that actually matters here because
+Flyway runs at startup. See "Add a health endpoint" below for when this is
+picked up.
 
 Both environments run from this one file on the same host, separated by the
 compose project name and which `.env` is passed:
