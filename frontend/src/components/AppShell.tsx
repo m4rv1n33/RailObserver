@@ -1,7 +1,35 @@
-import { useRef, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { ThemeToggle } from './ThemeToggle'
+import { getMeta } from '../api/client'
 import { useAuth } from '../hooks/useAuth'
+
+// Read once per load. A failure is not worth surfacing: the label is an aid to
+// the person deploying, and an app that renders an error because it could not
+// name its own host is worse than one that stays quiet about it.
+function useInstanceLabel(): string | null {
+  const [label, setLabel] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      try {
+        const meta = await getMeta()
+        const parts = [meta.serverName, meta.environment].filter(Boolean)
+        if (!cancelled && parts.length > 0) {
+          setLabel(parts.join(' · '))
+        }
+      } catch {
+        // Stays null, so nothing renders.
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  return label
+}
 
 const tabs = [
   { to: '/', label: 'Advanced', end: true },
@@ -17,6 +45,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate()
   const taps = useRef(0)
   const { authRequired, lock } = useAuth()
+  const instance = useInstanceLabel()
 
   // Easter egg: tapping the title five times opens the hidden sample formations.
   function tapTitle() {
@@ -65,6 +94,16 @@ export function AppShell({ children }: { children: ReactNode }) {
           column grow the window, so sticky footers inside pages land on top of
           the nav rather than under it. */}
       <main className="min-h-0 flex-1 overflow-y-auto">{children}</main>
+
+      {/* Which machine and which deployment this is. Prod and staging run on
+          the same host and look identical otherwise, so the line has to be
+          present on every screen rather than behind a menu; it stays small
+          enough to read past. Absent entirely when unconfigured. */}
+      {instance && (
+        <div className="shrink-0 border-t border-line bg-surface px-4 py-1 text-center font-num text-[0.65rem] tracking-tight text-dim">
+          {instance}
+        </div>
+      )}
 
       <nav className="shrink-0 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)]">
         <div className="grid grid-cols-7">

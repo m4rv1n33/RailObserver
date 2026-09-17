@@ -45,6 +45,13 @@ railobserver:
     cookie-secure: ${RAILOBSERVER_AUTH_COOKIE_SECURE:true}
     max-attempts: 5
     lockout-minutes: 15
+  meta:
+    # Which machine and which environment this instance is. Both deployments run
+    # on the same host and differ only by compose project and .env, so nothing
+    # else tells them apart. Unset means the app shows no such line, which is
+    # what local development wants.
+    server-name: ${SERVER_NAME:}
+    environment: ${ENVIRONMENT:}
   formation:
     # opentransportdata.swiss Train Formation API. Token comes from the
     # OTD_API_TOKEN environment variable or backend/.env (see .env.example);

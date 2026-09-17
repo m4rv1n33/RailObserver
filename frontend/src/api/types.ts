@@ -3,6 +3,13 @@ export interface SessionResponse {
   authRequired: boolean
 }
 
+// Both null when the deployment did not set SERVER_NAME and ENVIRONMENT, which
+// is the normal case locally.
+export interface MetaResponse {
+  serverName: string | null
+  environment: string | null
+}
+
 export interface VehicleTypeResponse {
   id: number
   name: string

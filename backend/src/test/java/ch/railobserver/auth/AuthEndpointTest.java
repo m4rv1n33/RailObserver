@@ -1,6 +1,7 @@
 package ch.railobserver.auth;
 
 import ch.railobserver.common.exception.GlobalExceptionHandler;
+import ch.railobserver.meta.MetaController;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -16,8 +17,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 // Covers the rule that matters most: no valid session cookie, no access to the
-// data endpoints. A stub controller stands in for the real ones so the test
-// needs no database.
+// data endpoints, and the two exceptions to it. A stub controller stands in for
+// the real ones so the test needs no database.
 class AuthEndpointTest {
 
     @RestController
@@ -81,6 +82,17 @@ class AuthEndpointTest {
         mvc.perform(loginRequest("0000")).andExpect(status().isTooManyRequests());
     }
 
+    // /api/meta is the one non-auth path outside the filter, because the lock
+    // screen names the instance before anyone has logged into it.
+    @Test
+    void leavesTheMetaEndpointOpenWithoutASession() throws Exception {
+        mvc.perform(get("/api/meta"))
+                .andExpect(status().isOk())
+                .andExpect(result -> assertThat(result.getResponse().getContentAsString())
+                        .contains("\"serverName\":\"INTEGRA\"")
+                        .contains("\"environment\":\"prod\""));
+    }
+
     @Test
     void leavesEndpointsOpenWhenNoPinConfigured() throws Exception {
         AuthProperties open = new AuthProperties("", "", 365, true, 5, 15);
@@ -106,7 +118,10 @@ class AuthEndpointTest {
     }
 
     private static MockMvc mockMvc(AuthService authService) {
-        return MockMvcBuilders.standaloneSetup(new AuthController(authService), new StubController())
+        return MockMvcBuilders.standaloneSetup(
+                        new AuthController(authService),
+                        new MetaController("INTEGRA", "prod"),
+                        new StubController())
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .addFilters(new SessionAuthFilter(authService))
                 .build();

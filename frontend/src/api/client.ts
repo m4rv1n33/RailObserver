@@ -7,6 +7,7 @@ import type {
   FleetCountResponse,
   FleetDetailResponse,
   FleetSummaryResponse,
+  MetaResponse,
   MonthlyCountResponse,
   OperatorCountResponse,
   SightingLocationResponse,
@@ -70,6 +71,10 @@ export function login(pin: string): Promise<void> {
 
 export function logout(): Promise<void> {
   return request('/auth/logout', { method: 'POST' })
+}
+
+export function getMeta(): Promise<MetaResponse> {
+  return request('/meta')
 }
 
 export function getVehicles(): Promise<VehicleResponse[]> {
