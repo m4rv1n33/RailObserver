@@ -19,5 +19,9 @@ frontend/.vite/
 .env
 .env.local
 
+# Database dumps written by the backup service in docker-compose.prod.yml when
+# the stack is run from a checkout.
+backups/
+
 # Agent instructions
 CLAUDE.md

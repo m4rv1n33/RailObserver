@@ -63,5 +63,22 @@ services:
       - "127.0.0.1:${WEB_PORT}:8080"
     mem_limit: 128m
 
+  backup:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: ${DB_PASSWORD}
+    volumes:
+      # A bind mount to a host directory, deliberately not the postgres-data
+      # volume: `docker compose down -v` removes named volumes, and a backup
+      # that dies with the thing it is backing up is not one.
+      - ./backups:/backups
+    entrypoint: >
+      sh -c 'while true; do pg_dump -h postgres -U ${DB_USERNAME} railobserver | gzip > /backups/railobserver-$$(date +%Y%m%d-%H%M).sql.gz; find /backups -name "railobserver-*.sql.gz" -mtime +30 -delete; sleep 86400; done'
+    mem_limit: 256m
+
 volumes:
   postgres-data:
