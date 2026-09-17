@@ -6,8 +6,9 @@ document, [SECURITY.md](SECURITY.md); this one covers packaging, deployment,
 data safety and operations.
 
 The application code itself is in good shape. Almost everything below is about
-the layer around it. Images, a production compose file, the proxy and the build
-pipeline now exist; backup is still the one that matters and still does not.
+the layer around it. Images, a production compose file, the proxy, the build
+pipeline and a nightly dump now exist. What is left on the backup is the half
+that makes it a backup: restoring one, and getting a copy off the machine.
 
 ## Where things stand
 
@@ -21,7 +22,7 @@ pipeline now exist; backup is still the one that matters and still does not.
 | Containers | `docker-compose.yml` for development, `docker-compose.prod.yml` for the homelab |
 | Images | `backend/Dockerfile` and `frontend/Dockerfile`, pushed to GHCR |
 | CI | `.github/workflows/build.yml` builds and pushes both images on every push to main. No test workflow yet |
-| Backups | None |
+| Backups | Nightly `pg_dump` to a host bind mount, 30 day window. Never restored, and no copy off the machine |
 | Health checks | None. Actuator is not on the classpath |
 | Tests | 8 test classes, backend only, no frontend tests |
 
@@ -30,35 +31,33 @@ pipeline now exist; backup is still the one that matters and still does not.
 These are the items that make the difference between "runs on my laptop" and
 "runs unattended on a box I trust with my data".
 
-### 1. There is no backup
+### 1. Backup - half done
 
-This is the highest-priority item on the page. The sighting log is
-irreplaceable: it cannot be re-derived from any external source, unlike the
-fleet rosters and the transport API data. A disk failure or a bad `docker
-compose down -v` loses all of it permanently.
+The sighting log is irreplaceable: it cannot be re-derived from any external
+source, unlike the fleet rosters and the transport API data. A disk failure or
+a bad `docker compose down -v` loses all of it permanently.
 
-Minimum viable setup is a nightly `pg_dump` to a directory outside the Docker
-volume, kept for a rolling window, with at least one copy off the machine.
+`docker-compose.prod.yml` now runs a `backup` service: a nightly `pg_dump`
+piped through gzip into `./backups`, with dumps older than 30 days deleted.
+`./backups` is a bind mount to a host directory rather than a named volume,
+which is the point of it: `down -v` removes named volumes, and a backup that
+dies alongside the thing it backs up is not one.
 
-```yaml
-  backup:
-    image: postgres:16-alpine
-    depends_on: [postgres]
-    environment:
-      PGPASSWORD: ${DB_PASSWORD}
-    volumes:
-      - ./backups:/backups
-    entrypoint: >
-      sh -c 'while true; do
-        pg_dump -h postgres -U railobserver railobserver
-          | gzip > /backups/railobserver-$$(date +%%Y%%m%%d-%%H%%M).sql.gz;
-        find /backups -name "railobserver-*.sql.gz" -mtime +30 -delete;
-        sleep 86400;
-      done'
-```
+Two things are still missing, and they are the two that decide whether this
+counts:
 
-A backup you have never restored is not a backup. Verify once by restoring a
-dump into a scratch database and pointing a local backend at it.
+- **No copy leaves the machine.** A host that dies takes the database and its
+  backups with it. Copy the directory somewhere else on a schedule.
+- **No restore has been tried.** A backup you have never restored is not a
+  backup. Verify once by restoring a dump into a scratch database and pointing
+  a local backend at it.
+
+One known weakness in the dump itself. The entrypoint is
+`pg_dump ... | gzip > file`, and a shell pipeline reports the exit status of
+its last command, so a `pg_dump` that fails still leaves a valid, empty,
+correctly named `.gz` behind. That is worse than an obvious absence, because
+the directory looks healthy. Either add `set -o pipefail` to the entrypoint or
+check the dump size before trusting the window.
 
 ### 2. Images - done
 
@@ -164,9 +163,11 @@ and the app on one origin:
 Two things follow from the tunnel being in front. The forwarded-header
 configuration in SECURITY.md trusts only the Docker-internal range, which is
 the Caddy container, so the client address the lockout counts is the one Caddy
-was told by the tunnel. And the response headers and CSP that SECURITY.md lists
-under "no security response headers" are still not set anywhere: they were
-going to go on the proxy, and the Caddyfile does not carry them yet.
+was told by the tunnel. And the response headers split in two: the Caddyfile
+now sets the ones this container can meaningfully assert about its own
+responses, while `Strict-Transport-Security` and the CSP belong at the
+Cloudflare edge, since this container only ever speaks plain HTTP and an HSTS
+header asserted over it says nothing.
 
 Do not set `RAILOBSERVER_AUTH_COOKIE_SECURE=false` as a workaround. That sends
 the session cookie in the clear on every request.
@@ -255,7 +256,7 @@ Add pagination or at least a bounded default with a date filter. The index
 Once the pieces above exist, a deploy looks like this. Flyway runs migrations on
 startup, so ordering matters.
 
-1. Take a backup of the current database, or verify last night's ran.
+1. Verify last night's dump landed in `./backups` and is not zero-length.
 2. Push to `main` and let the build workflow publish both images, or pick an
    existing `sha-<commit>` tag. Then `docker compose ... pull`.
 3. `docker compose ... up -d postgres` and wait for the healthcheck to pass.

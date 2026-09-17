@@ -132,24 +132,34 @@ Use a passphrase rather than a PIN. The field accepts one, the comparison is
 length-independent in practice, and the session lasts a year so it is typed
 rarely. If the app stays LAN-only or behind a VPN this drops to low.
 
-### Medium: no security response headers
+### Fixed at the proxy, with two headers deliberately left to Cloudflare
 
 There is no Spring Security on the classpath and no filter adding headers, so
-responses carry none of `Content-Security-Policy`,
-`Strict-Transport-Security`, `X-Content-Type-Options`, `Referrer-Policy` or
-`Permissions-Policy`. A CSP in particular is the second line of defence behind
-`HttpOnly` for any injected script.
-
-Cheapest place to fix this is the reverse proxy, since it is being added anyway:
+the application itself still sets none. `frontend/Caddyfile` now sets them
+instead:
 
 ```
 header {
-    Strict-Transport-Security "max-age=31536000; includeSubDomains"
     X-Content-Type-Options "nosniff"
     Referrer-Policy "no-referrer"
     Permissions-Policy "geolocation=(self), camera=(), microphone=()"
-    Content-Security-Policy "default-src 'self'; img-src 'self' data: https://*.tile.openstreetmap.org; style-src 'self' 'unsafe-inline'; connect-src 'self'"
+    X-Robots-Tag "noindex, nofollow, noarchive"
 }
+```
+
+`geolocation=(self)` matters: the Advanced page captures coordinates, so the
+permission has to stay allowed for the app's own origin. `X-Robots-Tag` covers
+every response rather than only HTML, including the manifest and the API, which
+is what makes it stronger than the meta tag described under Discoverability.
+
+Two are deliberately absent here. TLS terminates at the Cloudflare edge and this
+container only ever speaks plain HTTP, so `Strict-Transport-Security` asserted
+on a plain-HTTP response says nothing, and the CSP belongs next to whatever is
+actually serving the certificate. Set both at the edge:
+
+```
+Strict-Transport-Security "max-age=31536000; includeSubDomains"
+Content-Security-Policy "default-src 'self'; img-src 'self' data: https://*.tile.openstreetmap.org; style-src 'self' 'unsafe-inline'; connect-src 'self'"
 ```
 
 Two things the CSP has to accommodate: the map loads tiles from
@@ -157,9 +167,6 @@ Two things the CSP has to accommodate: the map loads tiles from
 `<script>`. Give that script a nonce or a hash rather than allowing
 `unsafe-inline` on `script-src`. Fonts are self-hosted since the design port, so
 no external font origin is needed.
-
-`geolocation=(self)` matters: the Advanced page captures coordinates, so the
-permission has to stay allowed for the app's own origin.
 
 ### Medium: the PIN is stored and compared in plaintext
 
@@ -217,12 +224,8 @@ behaved crawlers honour it, and nothing else does. Never list a path in
 path to exactly the readers who ignore the directive.
 
 **`X-Robots-Tag` at the proxy.** Stronger than the meta tag because it covers
-every response, not just HTML, including the manifest and the API. One line
-alongside the other headers:
-
-```
-header X-Robots-Tag "noindex, nofollow, noarchive"
-```
+every response, not just HTML, including the manifest and the API. It is set in
+`frontend/Caddyfile` alongside the other response headers above.
 
 **Certificate Transparency.** This is the one that matters, and no amount of
 `robots.txt` touches it. Requesting a Let's Encrypt certificate for
@@ -250,15 +253,18 @@ Before the instance is reachable from outside the LAN:
 - [ ] Run with `SPRING_PROFILES_ACTIVE=prod` so `AuthConfig` enforces both
 - [x] Change the Postgres credentials and remove the published `5432` port
       (`docker-compose.prod.yml`)
-- [ ] Terminate TLS at the proxy and leave `cookie-secure` at its `true` default
+- [x] Terminate TLS, which the Cloudflare Tunnel does, and leave
+      `cookie-secure` at its `true` default
 - [x] Configure `forward-headers-strategy` and fix `clientOf()`
-- [ ] Add the response headers and a CSP at the proxy
+- [x] Add the response headers at the proxy
+- [ ] Add HSTS and the CSP at the Cloudflare edge, which is where TLS ends
 - [ ] Confirm the API is same-origin with the frontend, or `SameSite=Lax`
       breaks login
 - [ ] Upgrade Spring Boot from 3.5.0 to the current 3.5.x patch
 - [ ] Verify a backup restores, since a compromise is recovered by restoring one
-- [ ] Add `X-Robots-Tag` at the proxy, and decide whether the hostname can
-      tolerate appearing in public Certificate Transparency logs
+- [x] Add `X-Robots-Tag` at the proxy
+- [ ] Decide whether the hostname can tolerate appearing in public Certificate
+      Transparency logs
 
 Consider whether the instance needs to be internet-facing at all. Behind
 Tailscale or WireGuard, most of the list above drops from necessary to prudent,
