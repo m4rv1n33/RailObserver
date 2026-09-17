@@ -76,8 +76,14 @@ services:
       # volume: `docker compose down -v` removes named volumes, and a backup
       # that dies with the thing it is backing up is not one.
       - ./backups:/backups
+    # pipefail makes the pipeline report pg_dump's failure rather than gzip's
+    # success, and the || arm is what that buys: without it the status is
+    # discarded by the next command and a failed dump still leaves a valid,
+    # correctly named, empty archive behind, so the directory looks healthy
+    # while holding nothing. On one line because the folded multi-line form
+    # puts a newline before the | gzip continuation, which is a syntax error.
     entrypoint: >
-      sh -c 'while true; do pg_dump -h postgres -U ${DB_USERNAME} railobserver | gzip > /backups/railobserver-$$(date +%Y%m%d-%H%M).sql.gz; find /backups -name "railobserver-*.sql.gz" -mtime +30 -delete; sleep 86400; done'
+      sh -c 'set -o pipefail; while true; do f=/backups/railobserver-$$(date +%Y%m%d-%H%M).sql.gz; pg_dump -h postgres -U ${DB_USERNAME} railobserver | gzip > "$$f" || { echo "backup failed, removing $$f" >&2; rm -f "$$f"; }; find /backups -name "railobserver-*.sql.gz" -mtime +30 -delete; sleep 86400; done'
     mem_limit: 256m
 
 volumes:

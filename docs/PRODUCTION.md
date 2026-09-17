@@ -52,12 +52,18 @@ counts:
   backup. Verify once by restoring a dump into a scratch database and pointing
   a local backend at it.
 
-One known weakness in the dump itself. The entrypoint is
-`pg_dump ... | gzip > file`, and a shell pipeline reports the exit status of
-its last command, so a `pg_dump` that fails still leaves a valid, empty,
-correctly named `.gz` behind. That is worse than an obvious absence, because
-the directory looks healthy. Either add `set -o pipefail` to the entrypoint or
-check the dump size before trusting the window.
+A failed dump leaves nothing behind. A shell pipeline normally reports the exit
+status of its last command, so `pg_dump ... | gzip > file` reports gzip's
+success and a failed dump would leave a valid, empty, correctly named `.gz`,
+which is worse than an obvious absence because the directory then looks
+healthy. The entrypoint sets `pipefail` so the pipeline reports `pg_dump`
+instead, and deletes the half-written archive when it does. `pipefail` alone
+would not have been enough: the status is discarded by the next command in the
+loop, so the empty file would have survived anyway.
+
+The failure is announced on stderr and therefore in `docker logs`. Nothing
+alerts on it, so a run of failed nights is still only visible by looking, which
+is the third reason the restore check below matters.
 
 ### 2. Images - done
 
