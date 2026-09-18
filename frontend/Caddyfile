@@ -35,4 +35,19 @@
 			file_server
 		}
 	}
+
+	# Only fires for errors Caddy raises itself (e.g. 502 when the backend is
+	# down). Responses proxied from Authelia or the backend pass through as-is.
+	handle_errors {
+		root * /srv/errors
+		@known expression `{err.status_code} in [401, 403, 404, 502]`
+		handle @known {
+			rewrite * /{err.status_code}.html
+			file_server
+		}
+		handle {
+			rewrite * /error.html
+			file_server
+		}
+	}
 }
