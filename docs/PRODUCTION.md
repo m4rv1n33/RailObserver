@@ -17,14 +17,14 @@ that makes it a backup: restoring one, and getting a copy off the machine.
 | Backend build | Maven, Java 21, Spring Boot 3.5.0 |
 | Schema management | Flyway, `ddl-auto: validate`, 14 migrations |
 | Configuration | Environment variables, optional `backend/.env` via `DotenvEnvironmentPostProcessor` |
-| Authentication | Shared PIN, HMAC session cookie, works, see SECURITY.md |
+| Authentication | None in the app. Authelia via Caddy `forward_auth`, see SECURITY.md |
 | Frontend build | Vite, static `dist/`, PWA with precaching |
 | Containers | `docker-compose.yml` for development, `docker-compose.prod.yml` for the homelab |
 | Images | `backend/Dockerfile` and `frontend/Dockerfile`, pushed to GHCR |
 | CI | `.github/workflows/build.yml` builds and pushes both images on every push to main. No test workflow yet |
 | Backups | Nightly `pg_dump` to a host bind mount, 30 day window. Never restored, and no copy off the machine |
 | Health checks | None. Actuator is not on the classpath |
-| Tests | 8 test classes, backend only, no frontend tests |
+| Tests | 4 test classes, backend only, no frontend tests |
 
 ## Blockers
 
@@ -89,10 +89,9 @@ ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75", "-jar", "app.jar"]
 ```
 
 The frontend builds to static files, so the runtime stage is just a web server.
-Serving it from the same origin as the API is not optional: the session cookie
-is `SameSite=Lax`, so a split-origin deployment silently breaks login. Caddy
-handles both from one origin; `frontend/Caddyfile` proxies `/api/*` to the
-backend and serves everything else from `dist/`.
+Caddy serves both from one origin, behind a single Authelia check;
+`frontend/Caddyfile` proxies `/api/*` to the backend and serves everything else
+from `dist/`.
 
 ```dockerfile
 # frontend/Dockerfile
@@ -124,7 +123,7 @@ longer the file the homelab runs. `docker-compose.prod.yml` sits beside it and
 One item from that list is **deliberately deferred**: there is no healthcheck on
 the backend. Actuator is not on the classpath, so there is nothing to poll, and
 adding it drags in the question of which port it binds and whether it lands
-outside the auth boundary. `depends_on` already orders the backend behind a
+outside the Authelia boundary. `depends_on` already orders the backend behind a
 healthy Postgres, which is the ordering that actually matters here because
 Flyway runs at startup. See "Add a health endpoint" below for when this is
 picked up.
@@ -136,16 +135,11 @@ compose project name and which `.env` is passed:
 docker compose -p railobserver-prod --env-file prod/.env -f docker-compose.prod.yml up -d
 ```
 
-Give each environment its own `WEB_PORT` and its own
-`RAILOBSERVER_AUTH_SECRET`, and set `SERVER_NAME` and `ENVIRONMENT` in both, or
-the running app cannot tell you which of the two you have open.
+Give each environment its own `WEB_PORT`, and set `SERVER_NAME` and
+`ENVIRONMENT` in both, or the running app cannot tell you which of the two you
+have open.
 
 ### 4. Nothing terminates TLS - done at the tunnel, not in the repository
-
-`railobserver.auth.cookie-secure` defaults to `true`, which means the browser
-refuses to store the session cookie over plain HTTP. Reaching the app at
-`http://homelab:8080` therefore produces a login that appears to succeed and
-then immediately bounces back to the lock screen.
 
 TLS is terminated by the Cloudflare Tunnel on the host, not by Caddy, so
 `frontend/Caddyfile` listens on plain `:8080` and requests no certificate. That
@@ -154,33 +148,17 @@ the plain-HTTP port must not be reachable from the LAN, and the tunnel is the
 single way in. The certificate, the hostname and the Let's Encrypt handling are
 all Cloudflare's side and live in no file here.
 
-Caddy still does the part that matters to the cookie, which is keeping the API
-and the app on one origin:
-
-```
-:8080 {
-    handle /api/* {
-        reverse_proxy backend:8080
-    }
-    handle {
-        root * /srv
-        try_files {path} /index.html
-        file_server
-    }
-}
-```
+Caddy keeps the API and the app on one origin and puts both behind Authelia;
+see `frontend/Caddyfile`.
 
 Two things follow from the tunnel being in front. The forwarded-header
 configuration in SECURITY.md trusts only the Docker-internal range, which is
-the Caddy container, so the client address the lockout counts is the one Caddy
+the Caddy container, so the client address the backend sees is the one Caddy
 was told by the tunnel. And the response headers split in two: the Caddyfile
 now sets the ones this container can meaningfully assert about its own
 responses, while `Strict-Transport-Security` and the CSP belong at the
 Cloudflare edge, since this container only ever speaks plain HTTP and an HSTS
 header asserted over it says nothing.
-
-Do not set `RAILOBSERVER_AUTH_COOKIE_SECURE=false` as a workaround. That sends
-the session cookie in the clear on every request.
 
 ### 5. Outbound HTTP calls have no timeout - done
 
@@ -222,17 +200,16 @@ Add pagination or at least a bounded default with a date filter. The index
   dependency security fixes. Move to the latest 3.5.x and keep it there. Do not
   jump to 4.x as part of the production move.
 - **Add a health endpoint.** Without `spring-boot-starter-actuator` there is
-  nothing for a container healthcheck or an uptime monitor to poll. Note that
-  `SessionAuthFilter` only covers `/api/*`, so actuator lands outside the auth
-  boundary. Bind it to a separate management port that is not proxied, or
-  restrict it to `health` with `show-details: never`.
+  nothing for a container healthcheck or an uptime monitor to poll. Bind it to a
+  separate management port that is not proxied, or restrict it to `health` with
+  `show-details: never`.
 - **Add a catch-all exception handler.** `GlobalExceptionHandler` covers
-  not-found, duplicate, validation and the two auth exceptions. Anything else
-  falls through to Spring's default error handling, which is a different
-  response shape than the `ErrorResponse` the frontend expects. Add an
-  `@ExceptionHandler(Exception.class)` that logs the cause and returns a
-  generic 500, and set `server.error.include-stacktrace: never` and
-  `include-message: never` explicitly rather than relying on defaults.
+  not-found, duplicate and validation. Anything else falls through to Spring's
+  default error handling, which is a different response shape than the
+  `ErrorResponse` the frontend expects. Add an
+  `@ExceptionHandler(Exception.class)` that logs the cause and returns a generic
+  500, and set `server.error.include-stacktrace: never` and `include-message:
+  never` explicitly rather than relying on defaults.
 - **Set up CI.** A GitHub Actions workflow running `./mvnw verify` and
   `npm ci && npm run lint && npm run build` on push would have caught the two
   lint errors that sat in `main` until now. This is cheap and pays for itself.
@@ -256,10 +233,10 @@ Add pagination or at least a bounded default with a date filter. The index
   taps the title five times and by anyone who types the URL. That is fine, it
   only renders hand-built sample data, but it is worth knowing it is not a
   protected route.
-- **Add frontend tests.** There are none. The backend has 8 test classes
-  covering auth, fleet and formation logic. A couple of tests around
-  `useVehicleNumbers` and the fleet recognition path in the UI would cover the
-  parts most likely to break silently.
+- **Add frontend tests.** There are none. The backend tests cover fleet and
+  formation logic. A couple of tests around `useVehicleNumbers` and the fleet
+  recognition path in the UI would cover the parts most likely to break
+  silently.
 
 ## Deployment sequence
 
@@ -273,8 +250,8 @@ startup, so ordering matters.
 4. Bring up the backend. Flyway applies any pending migrations here. Watch the
    log for the migration summary before continuing.
 5. Bring up the frontend and the proxy.
-6. Confirm `GET /api/auth/session` returns 401 from outside, and that the lock
-   screen accepts the PIN.
+6. Confirm an unauthenticated request from outside is redirected to Authelia,
+   both for `/` and for `/api/sightings`.
 
 Migrations in this project are forward-only and several of them seed data
 (`V3`, `V7`, `V8`, `V13`). There is no down-migration path, so a bad migration
@@ -285,10 +262,6 @@ optional.
 
 Worth writing down so they do not get re-litigated later:
 
-- No multi-user support, no accounts, no roles. The whole auth model is one
-  shared PIN and that is the intended design.
-- Login attempt counters live in memory and reset on restart. Acceptable for a
-  single-user instance.
-- Sessions last a year and cannot be revoked individually. Rotating
-  `RAILOBSERVER_AUTH_SECRET` invalidates all of them at once, which is the only
-  revocation mechanism and is enough for one person with a handful of devices.
+- No multi-user support, no accounts, no roles, and no authentication in the
+  application. Authelia in front of Caddy is the whole auth model, and that is
+  the intended design.
