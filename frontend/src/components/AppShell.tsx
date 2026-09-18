@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { ThemeToggle } from './ThemeToggle'
 import { getMeta } from '../api/client'
-import { useAuth } from '../hooks/useAuth'
 
 // Read once per load. A failure is not worth surfacing: the label is an aid to
 // the person deploying, and an app that renders an error because it could not
@@ -44,7 +43,6 @@ const tabs = [
 export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate()
   const taps = useRef(0)
-  const { authRequired, lock } = useAuth()
   const instance = useInstanceLabel()
 
   // Easter egg: tapping the title five times opens the hidden sample formations.
@@ -73,20 +71,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         </h1>
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          {authRequired && (
-            <button
-              type="button"
-              onClick={lock}
-              aria-label="Lock"
-              title="Lock"
-              className="flex h-9 w-9 items-center justify-center rounded-md border border-line text-dim transition-colors hover:bg-subtle hover:text-fg"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-5 w-5">
-                <rect x="4" y="10" width="16" height="11" rx="2" />
-                <path strokeLinecap="round" d="M8 10V7a4 4 0 1 1 8 0v3" />
-              </svg>
-            </button>
-          )}
         </div>
       </header>
 

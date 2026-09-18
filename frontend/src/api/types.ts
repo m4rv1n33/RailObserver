@@ -1,8 +1,3 @@
-export interface SessionResponse {
-  authenticated: boolean
-  authRequired: boolean
-}
-
 // Both null when the deployment did not set SERVER_NAME and ENVIRONMENT, which
 // is the normal case locally.
 export interface MetaResponse {
