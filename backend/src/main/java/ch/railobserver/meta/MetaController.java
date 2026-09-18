@@ -9,12 +9,6 @@ import org.springframework.web.bind.annotation.RestController;
 // Says which instance this is. Prod and staging run on the same machine and are
 // distinguished only by their compose project and .env, so without this the
 // running app has no way to tell you which one you are looking at.
-//
-// Unauthenticated on purpose, listed as an open path in SessionAuthFilter. It
-// returns two strings that the deployment chose and that name nothing an
-// attacker could not already infer from the hostname, and the thing it is for
-// is telling two deployments apart while one of them is misbehaving, which is
-// exactly when needing a session first is in the way.
 @RestController
 @RequestMapping("/api/meta")
 public class MetaController {
