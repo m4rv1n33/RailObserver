@@ -3,74 +3,152 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex">
+<meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
 <title>502 Bad Gateway | RailObserver</title>
 <style>
 :root {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+  --accent: #eb0000;
   --bg: #09090b;
   --fg: #f4f4f5;
   --muted: #a1a1aa;
-  --faint: #71717a;
-  --line: #27272a;
-  --accent: #eb0000;
-  --sans: "Inter Variable", Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --border: #27272a;
+  color-scheme: dark;
 }
-* { box-sizing: border-box; margin: 0; }
-html, body { height: 100%; }
+*, *::before, *::after { box-sizing: border-box; }
 body {
+  margin: 0;
+  min-height: 100vh;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1.25rem;
+  flex-direction: column;
   background: var(--bg);
   color: var(--fg);
-  font-family: var(--sans);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
-  text-align: center;
 }
-main { max-width: 36rem; }
-.eyebrow {
-  margin-bottom: 1.25rem;
-  font-family: var(--mono);
+::selection { background-color: var(--accent); color: #fff; }
+h1, h2, p { margin: 0; }
+.dot {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  background: var(--accent);
+}
+.inner {
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+/* Same status-bar header and footer as the INTEGRA maintenance page, without
+   its hostname script: these pages stay static. */
+header { border-bottom: 1px solid var(--border); }
+footer { border-top: 1px solid var(--border); }
+header .inner, footer .inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1.5rem;
+  flex-wrap: wrap;
+  font-family: var(--font-mono);
   font-size: 0.75rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);
 }
-.eyebrow span { color: var(--accent); }
+header .inner {
+  min-height: 3.5rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+footer .inner {
+  padding-top: 1.25rem;
+  padding-bottom: 1.25rem;
+}
+.system {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-width: 0;
+}
+.system strong {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--fg);
+}
+.host {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.state {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--fg);
+}
+main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  text-align: center;
+}
+main .inner {
+  max-width: 36rem;
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+}
 h1 {
   font-size: clamp(4.5rem, 20vw, 8rem);
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1;
   letter-spacing: -0.025em;
 }
 h2 {
   margin-top: 1rem;
   padding-bottom: 1.5rem;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--border);
   font-size: clamp(1.875rem, 6vw, 2.25rem);
   font-weight: 700;
   letter-spacing: -0.025em;
 }
-p.message {
+.lead {
   margin-top: 1.5rem;
   font-size: 1.125rem;
-  line-height: 1.625;
+  line-height: 1.6;
   color: var(--muted);
 }
-::selection { background: var(--accent); color: #fff; }
+.accent { color: var(--accent); }
 </style>
 </head>
 <body>
+<header>
+<div class="inner">
+<p class="system"><strong>INTEGRA</strong> <span class="host">/ RailObserver</span></p>
+<p class="state"><span class="dot" aria-hidden="true"></span> Offline</p>
+</div>
+</header>
 <main>
-<p class="eyebrow"><span>502</span> / RailObserver</p>
+<div class="inner">
 <h1>502</h1>
 <h2>Bad Gateway</h2>
-<p class="message">The service is temporarily unavailable.</p>
+<p class="lead">The service is temporarily unavailable.</p>
+</div>
 </main>
+<footer>
+<div class="inner">
+<p>INTEGRA homelab</p>
+<p>HTTP <span class="accent">502</span></p>
+</div>
+</footer>
 </body>
 </html>
