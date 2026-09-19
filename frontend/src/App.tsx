@@ -11,6 +11,7 @@ import { VehicleDetailPage } from './pages/VehicleDetailPage'
 import { MapPage } from './pages/MapPage'
 import { FormationPage } from './pages/FormationPage'
 import { FormationSamplesPage } from './pages/FormationSamplesPage'
+import { NotFoundPage } from './pages/NotFoundPage'
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
         <Route path="/map" element={<MapPage />} />
         <Route path="/formation" element={<FormationPage />} />
         <Route path="/secret/formations" element={<FormationSamplesPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </AppShell>
   )
