@@ -187,14 +187,14 @@ export function MapPage() {
         <Button
           variant={viewMode === 'markers' ? 'primary' : 'secondary'}
           onClick={() => setViewMode('markers')}
-          className="flex-1 px-3 py-2 text-sm font-medium"
+          className="flex-1 px-3 py-3 text-sm font-medium"
         >
           Markers
         </Button>
         <Button
           variant={viewMode === 'heatmap' ? 'primary' : 'secondary'}
           onClick={() => setViewMode('heatmap')}
-          className="flex-1 px-3 py-2 text-sm font-medium"
+          className="flex-1 px-3 py-3 text-sm font-medium"
         >
           Heatmap
         </Button>
@@ -202,7 +202,7 @@ export function MapPage() {
 
       {error && <p className="mt-4 text-sm text-danger">Could not load sighting locations.</p>}
 
-      <div className="mt-4 h-[60vh] overflow-hidden border border-line">
+      <div className="mt-4 h-[55svh] min-h-64 overflow-hidden border border-line">
         <MapContainer center={SWITZERLAND_CENTER} zoom={DEFAULT_ZOOM} className="h-full w-full">
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

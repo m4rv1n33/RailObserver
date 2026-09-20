@@ -33,13 +33,13 @@ export function VehicleNumberInput({
           {numbers.map((number, index) => (
             <li
               key={`${number}-${index}`}
-              className="flex items-center gap-1.5 border border-accent/40 bg-accent-soft px-2.5 py-1 font-num text-sm text-accent"
+              className="flex min-h-9 items-center gap-1 border border-accent/40 bg-accent-soft py-1 pl-2.5 font-num text-sm text-accent"
             >
               {number}
               <button
                 type="button"
                 onClick={() => onRemove(index)}
-                className="text-accent/70 hover:text-accent"
+                className="flex h-8 w-8 items-center justify-center text-lg leading-none text-accent/70 hover:text-accent"
                 aria-label={`Remove ${number}`}
               >
                 ×
@@ -52,6 +52,8 @@ export function VehicleNumberInput({
         <input
           type="text"
           inputMode="numeric"
+          autoComplete="off"
+          enterKeyHint="done"
           autoFocus={autoFocus}
           value={input}
           onChange={(event) => onInputChange(event.target.value)}
@@ -63,7 +65,8 @@ export function VehicleNumberInput({
           type="button"
           onClick={onAdd}
           disabled={!input.trim()}
-          className="rounded-md border border-line px-4 text-lg font-medium text-dim transition-colors hover:bg-subtle hover:text-fg disabled:opacity-40"
+          aria-label="Add vehicle number"
+          className="w-14 shrink-0 rounded-md border border-line text-xl font-medium text-dim transition-colors hover:bg-subtle hover:text-fg disabled:opacity-40"
         >
           +
         </button>

@@ -195,12 +195,12 @@ export function AdvancedPage() {
         </Field>
 
         <Field label="Location">
-          <div className="flex items-center gap-2">
-            <Button variant="secondary" onClick={captureLocation} className="px-3 py-2 text-sm font-medium">
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="secondary" onClick={captureLocation} className="px-3 py-3 text-sm font-medium">
               {locationStatus === 'locating' ? 'Locating...' : 'Use current location'}
             </Button>
             {latitude !== null && longitude !== null && (
-              <span className="text-sm text-dim">
+              <span className="font-num text-sm text-dim">
                 {latitude.toFixed(5)}, {longitude.toFixed(5)}
                 {locationSource === 'station' && ' (station)'}
               </span>
@@ -215,15 +215,15 @@ export function AdvancedPage() {
           <legend className="px-1 text-sm font-medium text-fg">Service</legend>
 
           {hasService ? (
-            <div className="flex items-center justify-between gap-2 text-sm">
-              <span>
+            <div className="flex items-start justify-between gap-2 text-sm">
+              <span className="min-w-0 break-words">
                 <span className="font-medium text-accent">
                   {[line, trainNumber].filter(Boolean).join(' ')}
                 </span>
                 {destination && <span className="text-dim">{' to '}</span>}
                 {destination}
               </span>
-              <button type="button" onClick={clearService} className="text-sm text-dim underline">
+              <button type="button" onClick={clearService} className="shrink-0 text-sm text-dim underline">
                 Clear
               </button>
             </div>
@@ -240,7 +240,7 @@ export function AdvancedPage() {
 
       {/* Sticks to the bottom of the scroll container so saving never requires
           scrolling past the departure list. */}
-      <div className="sticky bottom-0 z-10 -mx-4 -mb-4 mt-auto border-t border-line bg-canvas px-4 py-3">
+      <div className="sticky bottom-0 z-10 -mx-4 -mb-4 mt-auto border-t border-line bg-canvas px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3">
         {status === 'saved' && <p className="mb-2 text-sm text-success">Sighting saved.</p>}
         {status === 'error' && (
           <p className="mb-2 text-sm text-danger">Could not save sighting. Try again.</p>

@@ -64,9 +64,9 @@ export function DepartureLookup({ station, when, onSelect }: DepartureLookupProp
               <button
                 type="button"
                 onClick={() => onSelect(departure)}
-                className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-subtle"
+                className="flex w-full items-center justify-between gap-2 px-3 py-3 text-left text-sm hover:bg-subtle"
               >
-                <span>
+                <span className="min-w-0 truncate">
                   <span className="font-medium text-accent">
                     {[departure.line, departure.trainNumber].filter(Boolean).join(' ')}
                   </span>
@@ -74,7 +74,7 @@ export function DepartureLookup({ station, when, onSelect }: DepartureLookupProp
                   {departure.destination}
                   {departure.platform ? ` (Pl. ${departure.platform})` : ''}
                 </span>
-                <span className="text-dim">{formatTime(departure.departureTime)}</span>
+                <span className="shrink-0 font-num text-dim">{formatTime(departure.departureTime)}</span>
               </button>
             </li>
           ))}

@@ -97,12 +97,11 @@ export function VehicleDetailPage() {
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
               placeholder="e.g. Siemens obstacle detection system installed for testing"
-              className="text-sm"
             />
             <Button
               onClick={() => void saveNotes()}
               disabled={saveStatus === 'saving'}
-              className="mt-2 px-4 py-2 text-sm font-semibold"
+              className="mt-2 px-4 py-3 text-sm font-semibold"
             >
               {saveStatus === 'saving' ? 'Saving...' : 'Save notes'}
             </Button>

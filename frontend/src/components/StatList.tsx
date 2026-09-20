@@ -16,7 +16,7 @@ export function StatList({ title, items }: { title: string; items: StatItem[] })
         <ul className="space-y-1.5">
           {items.map((item) => (
             <li key={item.label} className="flex items-center gap-2 text-sm">
-              <span className="w-32 shrink-0 truncate">{item.label}</span>
+              <span className="w-28 shrink-0 truncate sm:w-40">{item.label}</span>
               <div className="h-1.5 flex-1 bg-subtle">
                 <div
                   className="h-1.5 bg-accent"

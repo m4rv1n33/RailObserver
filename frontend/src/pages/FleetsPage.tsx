@@ -60,8 +60,8 @@ export function FleetsPage() {
                   className="block border border-line border-l-2 border-l-transparent bg-surface p-3 transition-colors hover:border-accent hover:border-l-accent"
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-medium">{fleet.name}</span>
-                    <span className="font-num text-sm text-dim">
+                    <span className="min-w-0 truncate font-medium">{fleet.name}</span>
+                    <span className="shrink-0 font-num text-sm text-dim">
                       {fleet.seenCount}
                       {fleet.fleetSize !== null ? ` / ${fleet.fleetSize}` : ''}
                     </span>

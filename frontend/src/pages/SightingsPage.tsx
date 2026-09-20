@@ -62,12 +62,12 @@ export function SightingsPage() {
               key={sighting.id}
               className="flex items-start justify-between gap-2 border border-line border-l-2 border-l-accent bg-surface p-3"
             >
-              <div>
+              <div className="min-w-0 flex-1">
                 <Link to={`/sightings/${sighting.id}`} className="font-num text-xs text-dim hover:text-fg">
                   {new Date(sighting.observedAt).toLocaleString()}
                   {sighting.formation && <span className="ml-1 font-sans text-faint">· formation</span>}
                 </Link>
-                <p className="mt-0.5 font-num font-medium">
+                <p className="mt-0.5 break-words font-num font-medium">
                   {sighting.vehicles.map((vehicle, index) => (
                     <span key={vehicle.id}>
                       {index > 0 && ', '}
@@ -85,12 +85,12 @@ export function SightingsPage() {
                 {sighting.service && (
                   <p className="text-sm text-dim">{formatService(sighting.service)}</p>
                 )}
-                {sighting.notes && <p className="mt-1 text-sm">{sighting.notes}</p>}
+                {sighting.notes && <p className="mt-1 break-words text-sm">{sighting.notes}</p>}
               </div>
               <Button
                 variant="danger"
                 onClick={() => void handleDelete(sighting.id)}
-                className="shrink-0 px-2 py-1 text-sm font-medium"
+                className="shrink-0 px-3 py-2 text-sm font-medium"
               >
                 Delete
               </Button>
