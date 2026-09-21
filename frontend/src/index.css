@@ -99,6 +99,25 @@
   --app-height: 100svh;
 }
 
+/* The shell is exactly viewport-sized and scrolls internally, so the document
+   itself must never scroll. Without this an iOS drag shifts the whole page and
+   Safari restores that offset on the next load, leaving part of the app off
+   screen until the scroll position is cleared. */
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  position: fixed;
+  inset: 0;
+}
+
+#root {
+  height: 100%;
+}
+
 html {
   color-scheme: light;
   /* Keep iOS from re-scaling text when the device is rotated. */
@@ -115,8 +134,6 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  /* The shell is exactly viewport-sized and scrolls internally, so the page
-     itself must not rubber-band. */
   overscroll-behavior-y: none;
 }
 

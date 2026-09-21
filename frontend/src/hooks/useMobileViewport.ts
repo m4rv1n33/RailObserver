@@ -20,6 +20,16 @@ export function useMobileViewport(): { keyboardOpen: boolean } {
     const viewport = window.visualViewport
     const root = document.documentElement
 
+    // Safari restores the window scroll offset on reload, so a page that was
+    // shifted while the keyboard was up comes back shifted. The shell never
+    // wants a window scroll at all.
+    const previousRestoration = history.scrollRestoration
+    history.scrollRestoration = 'manual'
+
+    function resetWindowScroll() {
+      if (window.scrollX !== 0 || window.scrollY !== 0) window.scrollTo(0, 0)
+    }
+
     function focusedField() {
       const active = document.activeElement
       if (!(active instanceof HTMLElement) || !active.matches(FORM_FIELDS)) return null
@@ -46,6 +56,7 @@ export function useMobileViewport(): { keyboardOpen: boolean } {
       }
       setKeyboardOpen(keyboard)
       if (keyboard) scrollFocusedIntoView()
+      else resetWindowScroll()
     }
 
     let timer: number | undefined
@@ -67,6 +78,7 @@ export function useMobileViewport(): { keyboardOpen: boolean } {
     }
 
     apply()
+    resetWindowScroll()
     viewport.addEventListener('resize', apply)
     viewport.addEventListener('scroll', apply)
     window.addEventListener('orientationchange', apply)
@@ -81,6 +93,7 @@ export function useMobileViewport(): { keyboardOpen: boolean } {
       window.removeEventListener('resize', apply)
       document.removeEventListener('focusin', onFocusIn)
       document.removeEventListener('focusout', onFocusOut)
+      history.scrollRestoration = previousRestoration
       root.style.removeProperty('--app-height')
     }
   }, [])
