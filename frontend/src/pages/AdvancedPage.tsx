@@ -142,7 +142,7 @@ export function AdvancedPage() {
         subtitle="Log a sighting with full details."
       />
 
-      <div className="mt-4 space-y-4">
+      <div className="mt-3 space-y-3 sm:mt-4 sm:space-y-4">
         <Field label="Vehicles">
           <VehicleNumberInput
             numbers={vehicles.numbers}
@@ -164,6 +164,11 @@ export function AdvancedPage() {
           )}
         </Field>
 
+        {/* Full width on purpose. iOS Safari lays datetime-local out as a
+            native control whose intrinsic width is the locale-formatted date
+            and time; it will not shrink into a half-width column, and no
+            desktop browser reproduces that because none of them use WebKit's
+            date widget. */}
         <Field label="Observed at">
           <TextInput
             type="datetime-local"
@@ -172,46 +177,54 @@ export function AdvancedPage() {
           />
         </Field>
 
-        <Field label="Station">
-          <StationAutocomplete
-            value={station}
-            onChange={setStation}
-            onSelect={(selected) => {
-              setStation(selected.name)
-              setLookupStation(selected.name)
-              // A picked station puts the sighting on the map without GPS, but a
-              // real GPS fix is more precise and keeps precedence once taken.
-              if (
-                locationSource !== 'gps' &&
-                typeof selected.latitude === 'number' &&
-                typeof selected.longitude === 'number'
-              ) {
-                setLatitude(selected.latitude)
-                setLongitude(selected.longitude)
-                setLocationSource('station')
-              }
-            }}
-          />
-        </Field>
-
-        <Field label="Location">
-          <div className="flex flex-wrap items-center gap-2">
-            <Button variant="secondary" onClick={captureLocation} className="px-3 py-3 text-sm font-medium">
-              {locationStatus === 'locating' ? 'Locating...' : 'Use current location'}
+        {/* The GPS fix belongs to the station, so it rides on that row instead
+            of costing the form a field of its own. */}
+        <div>
+          <span className="mb-1 block text-sm font-medium text-fg">Station</span>
+          <div className="flex gap-2">
+            <div className="min-w-0 flex-1">
+              <StationAutocomplete
+                value={station}
+                onChange={setStation}
+                onSelect={(selected) => {
+                  setStation(selected.name)
+                  setLookupStation(selected.name)
+                  // A picked station puts the sighting on the map without GPS,
+                  // but a real GPS fix is more precise and keeps precedence
+                  // once taken.
+                  if (
+                    locationSource !== 'gps' &&
+                    typeof selected.latitude === 'number' &&
+                    typeof selected.longitude === 'number'
+                  ) {
+                    setLatitude(selected.latitude)
+                    setLongitude(selected.longitude)
+                    setLocationSource('station')
+                  }
+                }}
+              />
+            </div>
+            <Button
+              variant="secondary"
+              onClick={captureLocation}
+              aria-label="Use current location"
+              className="min-h-11 w-14 shrink-0 px-0 text-xs font-medium"
+            >
+              {locationStatus === 'locating' ? '...' : 'GPS'}
             </Button>
-            {latitude !== null && longitude !== null && (
-              <span className="font-num text-sm text-dim">
-                {latitude.toFixed(5)}, {longitude.toFixed(5)}
-                {locationSource === 'station' && ' (station)'}
-              </span>
-            )}
           </div>
+          {latitude !== null && longitude !== null && (
+            <p className="mt-1 font-num text-xs text-dim">
+              {latitude.toFixed(5)}, {longitude.toFixed(5)}
+              {locationSource === 'station' && ' (station)'}
+            </p>
+          )}
           {locationStatus === 'error' && (
             <p className="mt-1 text-sm text-danger">Could not determine location.</p>
           )}
-        </Field>
+        </div>
 
-        <fieldset className="space-y-2 border border-line p-4">
+        <fieldset className="space-y-2 border border-line p-3 sm:p-4">
           <legend className="px-1 text-sm font-medium text-fg">Service</legend>
 
           {hasService ? (
@@ -234,7 +247,7 @@ export function AdvancedPage() {
         </fieldset>
 
         <Field label="Notes">
-          <Textarea value={notes} onChange={(event) => setNotes(event.target.value)} rows={3} />
+          <Textarea value={notes} onChange={(event) => setNotes(event.target.value)} rows={2} />
         </Field>
       </div>
 
