@@ -51,8 +51,10 @@ export function VehicleNumberInput({
       <div className="flex gap-2">
         <input
           type="text"
-          inputMode="numeric"
           autoComplete="off"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
           enterKeyHint="done"
           autoFocus={autoFocus}
           value={input}
