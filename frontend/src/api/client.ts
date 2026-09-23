@@ -31,12 +31,24 @@ export class ApiError extends Error {
   }
 }
 
+const LOGIN_URL = 'https://auth.m4rv1n.dev'
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`/api${path}`, {
     headers: { 'Content-Type': 'application/json' },
     credentials: 'same-origin',
+    redirect: 'manual',
     ...init,
   })
+
+  // An expired Authelia session turns every API call into a redirect to the
+  // login page, which fetch cannot follow cross-origin. Reloading does not
+  // help either, since the service worker serves the app shell without ever
+  // reaching Authelia, so send the whole page to the login instead.
+  if (response.type === 'opaqueredirect' || response.status === 401) {
+    window.location.assign(`${LOGIN_URL}/?rd=${encodeURIComponent(window.location.href)}`)
+    throw new ApiError(401, 'Session expired')
+  }
 
   if (!response.ok) {
     throw new ApiError(response.status, await response.text())
